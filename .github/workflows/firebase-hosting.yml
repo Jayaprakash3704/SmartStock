@@ -50,4 +50,4 @@ jobs:
       - run: npm ci
       - run: npm run build
       - name: Deploy to Firebase Hosting
-        run: npx firebase-tools deploy --only hosting --project smartstock-42c5dname: Deploy to Firebase Hosting
+        run: npx firebase-tools deploy --only hosting --project smartstock-42c5d
