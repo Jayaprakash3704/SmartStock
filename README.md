@@ -147,31 +147,24 @@ The application includes sample products:
 
 **SmartStock** - Making inventory management smarter for small businesses! 🚀
 
-## Getting Started
+## SmartStock Inventory Management System
 
-To get started with SmartStock, follow these steps:
+🚀 **Live Demo:** https://smartstock-42c5d.web.app
 
-1. **Clone the repository**:
-   ```
-   git clone https://github.com/yourusername/smartstock.git
-   ```
+An intelligent inventory management system built with React, TypeScript, and Firebase.
 
-2. **Navigate to the project directory**:
-   ```
-   cd smartstock
-   ```
+## Features
+- Real-time inventory tracking
+- Dashboard with analytics
+- User management
+- Product management
+- Reports and insights
 
-3. **Install dependencies**:
-   ```
-   npm install
-   ```
-
-4. **Run the application**:
-   ```
-   npm start
-   ```
-
-5. **Open your browser** and go to `http://localhost:3000` to view the application.
+## Tech Stack
+- React 18 + TypeScript
+- Firebase (Firestore, Hosting)
+- Tailwind CSS
+- GitHub Actions (CI/CD)
 
 ## Technologies Used
 
