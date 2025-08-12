@@ -31,10 +31,7 @@ const navigationItems = [
 export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange, onSignOut }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const NavItem: React.FC<{ item: typeof navigationItems[0]; isMobile?: boolean }> = ({ 
-    item, 
-    isMobile = false 
-  }) => {
+  const MobileNavItem: React.FC<{ item: typeof navigationItems[0] }> = ({ item }) => {
     const isActive = currentPage === item.id;
     const Icon = item.icon;
 
@@ -42,46 +39,53 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
       <motion.button
         onClick={() => {
           onPageChange(item.id);
-          if (isMobile) setIsMobileMenuOpen(false);
+          setIsMobileMenuOpen(false);
         }}
         className={`
-          relative flex items-center gap-3 w-full px-4 py-3 rounded-lg text-left
-          transition-all duration-200 group
+          relative flex items-center gap-4 w-full px-4 py-4 rounded-xl text-left font-medium
+          transition-all duration-300 group
           ${isActive 
-            ? 'bg-primary text-white shadow-md' 
-            : 'text-muted hover:text-foreground hover:bg-accent/50'
+            ? 'bg-gradient-to-r from-primary to-primary/80 text-white shadow-lg shadow-primary/30' 
+            : 'text-muted hover:text-foreground hover:bg-gradient-to-r hover:from-accent/30 hover:to-accent/10'
           }
-          ${isMobile ? 'text-lg py-4' : ''}
         `}
-        whileHover={{ scale: 1.02, x: 4 }}
+        whileHover={{ 
+          scale: 1.02, 
+          x: 8,
+          transition: { type: "spring", stiffness: 400, damping: 25 }
+        }}
         whileTap={{ scale: 0.98 }}
       >
+        {/* Glow effect for active item */}
         {isActive && (
           <motion.div
-            layoutId="nav-indicator"
-            className="absolute inset-0 bg-primary rounded-lg"
-            initial={false}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary to-primary/80 opacity-20 blur-lg"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 0.3, scale: 1.1 }}
+            transition={{ duration: 0.5 }}
           />
         )}
         
         <Icon 
-          size={isMobile ? 24 : 20} 
-          className={`relative z-10 transition-transform group-hover:scale-110 ${
-            isActive ? 'text-white' : ''
+          size={22} 
+          className={`relative z-10 transition-all duration-300 group-hover:scale-110 ${
+            isActive ? 'text-white drop-shadow-sm' : ''
           }`} 
         />
-        <span className={`relative z-10 font-medium ${isActive ? 'text-white' : ''}`}>
-          {item.label}
-          <span className={`block text-xs ${isActive ? 'text-white/80' : 'text-muted'} mt-0.5`}>{item.sub}</span>
-        </span>
+        <div className={`relative z-10 ${isActive ? 'text-white' : ''}`}>
+          <div className="font-semibold text-base">{item.label}</div>
+          <div className={`text-sm opacity-75 ${isActive ? 'text-white/80' : 'text-muted'}`}>
+            {item.sub}
+          </div>
+        </div>
         
+        {/* Active indicator */}
         {isActive && (
           <motion.div
-            className="absolute right-0 w-1 h-8 bg-white/30 rounded-l-full"
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ delay: 0.1 }}
+            className="absolute right-3 w-2 h-8 bg-white/40 rounded-full"
+            initial={{ scaleY: 0, opacity: 0 }}
+            animate={{ scaleY: 1, opacity: 1 }}
+            transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 25 }}
           />
         )}
       </motion.button>
@@ -90,93 +94,151 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
 
   return (
     <>
-      {/* Desktop Top Navigation */}
+      {/* Desktop Modern Navigation Bar */}
       <motion.nav
-        className="hidden lg:flex items-center justify-between h-16 px-6 bg-card border-b border-border sticky top-0 z-40"
-        initial={{ y: -40, opacity: 0 }}
+        className="hidden lg:block bg-gradient-to-r from-card via-card/95 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-lg"
+        initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        {/* Brand */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center shadow-sm">
-            <Package className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold font-display leading-5">SmartStock</h1>
-            <p className="text-xs text-muted">Inventory System</p>
-          </div>
-        </div>
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between h-16">
+            {/* Brand Section */}
+            <motion.div 
+              className="flex items-center gap-3"
+              initial={{ x: -30, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-primary via-primary/80 to-primary/60 rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
+                <Package className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  SmartStock
+                </h1>
+                <p className="text-xs text-muted font-medium">Inventory System</p>
+              </div>
+            </motion.div>
 
-        {/* Horizontal Nav Items (5) */}
-        <div className="flex items-center gap-2">
-          {navigationItems.map((item) => {
-            const isActive = currentPage === item.id;
-            const Icon = item.icon;
-            return (
+            {/* Navigation Items */}
+            <div className="flex items-center gap-1">
+              {navigationItems.map((item, index) => {
+                const isActive = currentPage === item.id;
+                const Icon = item.icon;
+                
+                return (
+                  <motion.button
+                    key={item.id}
+                    onClick={() => onPageChange(item.id)}
+                    className={`
+                      relative px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 group
+                      ${isActive 
+                        ? 'bg-gradient-to-r from-primary to-primary/80 text-white shadow-lg shadow-primary/30' 
+                        : 'text-muted hover:text-foreground hover:bg-gradient-to-r hover:from-accent/30 hover:to-accent/10'
+                      }
+                    `}
+                    initial={{ y: -10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.1 + (index * 0.05) }}
+                    whileHover={{ 
+                      y: -2,
+                      scale: 1.05,
+                      transition: { type: "spring", stiffness: 400, damping: 25 }
+                    }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {/* Glow effect for active item */}
+                    {isActive && (
+                      <motion.div
+                        className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary to-primary/80 opacity-20 blur-lg"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 0.3, scale: 1.1 }}
+                        transition={{ duration: 0.5 }}
+                      />
+                    )}
+                    
+                    <span className="relative z-10 inline-flex items-center gap-2">
+                      <Icon size={18} className={`transition-transform group-hover:scale-110 ${isActive ? 'text-white' : ''}`} />
+                      <span className="font-semibold">{item.label}</span>
+                    </span>
+
+                    {/* Active indicator line */}
+                    {isActive && (
+                      <motion.div
+                        className="absolute bottom-0 left-1/2 w-8 h-0.5 bg-white/50 rounded-full"
+                        initial={{ width: 0, x: "-50%" }}
+                        animate={{ width: 32, x: "-50%" }}
+                        transition={{ delay: 0.2, duration: 0.3 }}
+                      />
+                    )}
+                  </motion.button>
+                );
+              })}
+            </div>
+
+            {/* Right Actions */}
+            <motion.div 
+              className="flex items-center gap-2"
+              initial={{ x: 30, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
               <motion.button
-                key={item.id}
-                onClick={() => onPageChange(item.id)}
-                className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors group ${
-                  isActive ? 'bg-primary text-white' : 'text-muted hover:text-foreground hover:bg-accent/40'
-                }`}
-                whileHover={{ y: -1, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                onClick={() => onPageChange('settings')}
+                className="p-2.5 rounded-xl text-muted hover:text-foreground hover:bg-accent/30 transition-all duration-200"
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
               >
-                <span className="absolute inset-0 rounded-full bg-white/0 group-hover:bg-white/5 transition-colors" />
-                <span className="relative z-10 inline-flex items-center gap-2">
-                  <Icon size={16} className={isActive ? 'text-white' : ''} />
-                  {item.label}
-                </span>
+                <Settings size={18} />
               </motion.button>
-            );
-          })}
-        </div>
-
-        {/* Utilities */}
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" className="hidden xl:flex">
-            <Settings size={16} />
-            <span className="sr-only">Settings</span>
-          </Button>
-          <ThemeToggle />
-          <Button
-            variant="ghost"
-            size="sm"
-            icon={<LogOut size={16} />}
-            className="text-muted hover:text-destructive"
-            onClick={() => onSignOut?.()}
-          >
-            Sign Out
-          </Button>
+              
+              <ThemeToggle />
+              
+              <motion.button
+                onClick={onSignOut}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <LogOut size={16} />
+                <span className="hidden xl:inline">Sign Out</span>
+              </motion.button>
+            </motion.div>
+          </div>
         </div>
       </motion.nav>
 
-  {/* Mobile Header */}
+      {/* Mobile Header */}
       <motion.header
-        className="lg:hidden bg-card border-b border-border sticky top-0 z-40"
+        className="lg:hidden bg-gradient-to-r from-card via-card/95 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-lg"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.3 }}
       >
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
+            <div className="w-9 h-9 bg-gradient-to-br from-primary via-primary/80 to-primary/60 rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
               <Package className="w-5 h-5 text-white" />
             </div>
-            <h1 className="text-lg font-bold font-display">SmartStock</h1>
+            <div>
+              <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                SmartStock
+              </h1>
+              <p className="text-xs text-muted font-medium">Inventory System</p>
+            </div>
           </div>
           
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button
-              variant="ghost"
-              size="sm"
+            <motion.button
               onClick={() => setIsMobileMenuOpen(true)}
-              icon={<Menu size={20} />}
+              className="p-2.5 rounded-xl text-foreground hover:bg-accent/30 transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              Menu
-            </Button>
+              <Menu size={20} />
+            </motion.button>
           </div>
         </div>
       </motion.header>
@@ -185,7 +247,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
       {isMobileMenuOpen && (
         <>
           <motion.div
-            className="fixed inset-0 bg-black/50 z-50 lg:hidden"
+            className="fixed inset-0 bg-black/60 z-50 lg:hidden backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
@@ -193,30 +255,32 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
           />
           
           <motion.div
-            className="fixed top-0 left-0 w-80 h-full bg-card z-50 lg:hidden shadow-2xl"
+            className="fixed top-0 left-0 w-80 h-full bg-gradient-to-b from-card to-card/95 z-50 lg:hidden shadow-2xl border-r border-border/50 backdrop-blur-lg"
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
-            transition={{ type: "tween", duration: 0.3 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            <div className="flex items-center justify-between p-6 border-b border-border">
+            <div className="flex items-center justify-between p-6 border-b border-border/30">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
+                <div className="w-10 h-10 bg-gradient-to-br from-primary via-primary/80 to-primary/60 rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
                   <Package className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold font-display">SmartStock</h1>
-                  <p className="text-sm text-muted">Inventory System</p>
+                  <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                    SmartStock
+                  </h1>
+                  <p className="text-sm text-muted font-medium">Inventory System</p>
                 </div>
               </div>
               
-              <Button
-                variant="ghost"
-                size="sm"
+              <motion.button
                 onClick={() => setIsMobileMenuOpen(false)}
-                icon={<X size={20} />}
+                className="p-2 rounded-xl text-muted hover:text-foreground hover:bg-accent/30 transition-all duration-200"
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
               >
-                Close
-              </Button>
+                <X size={20} />
+              </motion.button>
             </div>
 
             <div className="p-4 space-y-2">
@@ -225,31 +289,31 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
                   key={item.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 * index }}
+                  transition={{ delay: 0.05 * index, type: "spring", stiffness: 300, damping: 25 }}
                 >
-                  <NavItem item={item} isMobile />
+                  <MobileNavItem item={item} />
                 </motion.div>
               ))}
               {/* Settings as a mobile item */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.05 * (navigationItems.length + 1) }}
+                transition={{ delay: 0.05 * (navigationItems.length + 1), type: "spring", stiffness: 300, damping: 25 }}
               >
-                <NavItem item={{ id: 'settings', label: 'Settings', sub: 'Preferences', icon: Settings } as any} isMobile />
+                <MobileNavItem item={{ id: 'settings', label: 'Settings', sub: 'Preferences', icon: Settings } as any} />
               </motion.div>
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
-              <Button
-                variant="ghost"
-                fullWidth
-                icon={<LogOut size={16} />}
-                className="justify-start text-muted hover:text-destructive"
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/30 bg-gradient-to-t from-card/50 to-transparent backdrop-blur-sm">
+              <motion.button
                 onClick={() => { onSignOut?.(); setIsMobileMenuOpen(false); }}
+                className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left font-medium text-muted hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
+                whileHover={{ scale: 1.02, x: 4 }}
+                whileTap={{ scale: 0.98 }}
               >
-                Sign Out
-              </Button>
+                <LogOut size={20} />
+                <span>Sign Out</span>
+              </motion.button>
             </div>
           </motion.div>
         </>
