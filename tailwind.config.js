@@ -10,6 +10,7 @@ module.exports = {
       colors: {
         // Light theme colors - Professional and modern
         primary: {
+          DEFAULT: '#2563eb',
           50: '#f0f9ff',
           100: '#e0f2fe',
           200: '#bae6fd',
@@ -23,6 +24,7 @@ module.exports = {
           950: '#082f49'
         },
         secondary: {
+          DEFAULT: '#64748b',
           50: '#fafaf9',
           100: '#f5f5f4',
           200: '#e7e5e4',
@@ -36,6 +38,7 @@ module.exports = {
           950: '#0c0a09'
         },
         success: {
+          DEFAULT: '#22c55e',
           50: '#f0fdf4',
           100: '#dcfce7',
           200: '#bbf7d0',
@@ -49,6 +52,7 @@ module.exports = {
           950: '#052e16'
         },
         warning: {
+          DEFAULT: '#f59e0b',
           50: '#fffbeb',
           100: '#fef3c7',
           200: '#fde68a',
@@ -62,6 +66,7 @@ module.exports = {
           950: '#451a03'
         },
         error: {
+          DEFAULT: '#ef4444',
           50: '#fef2f2',
           100: '#fee2e2',
           200: '#fecaca',
@@ -73,7 +78,19 @@ module.exports = {
           800: '#991b1b',
           900: '#7f1d1d',
           950: '#450a0a'
-        }
+        },
+
+        // Semantic tokens mapped to CSS variables (for consistent theming)
+        background: 'var(--bg)',
+        foreground: 'var(--text)',
+        card: 'var(--surface)',
+        'card-foreground': 'var(--text)',
+        border: 'var(--border)',
+        muted: 'var(--text-muted)',
+        accent: {
+          DEFAULT: 'var(--accent)'
+        },
+        'accent-foreground': 'var(--text)'
       },
       fontFamily: {
         'sans': ['Inter', 'system-ui', 'sans-serif'],
