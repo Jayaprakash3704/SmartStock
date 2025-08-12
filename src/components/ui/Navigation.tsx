@@ -17,6 +17,7 @@ import { Button } from './Button';
 interface NavigationProps {
   currentPage: string;
   onPageChange: (page: string) => void;
+  onSignOut?: () => void;
 }
 
 const navigationItems = [
@@ -28,7 +29,7 @@ const navigationItems = [
   { id: 'settings', label: 'Settings', sub: 'Preferences', icon: Settings },
 ];
 
-export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) => {
+export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange, onSignOut }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const NavItem: React.FC<{ item: typeof navigationItems[0]; isMobile?: boolean }> = ({ 
@@ -134,6 +135,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
             fullWidth
             icon={<LogOut size={16} />}
             className="justify-start text-muted hover:text-destructive"
+            onClick={() => onSignOut?.()}
           >
             Sign Out
           </Button>
@@ -226,6 +228,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
                 fullWidth
                 icon={<LogOut size={16} />}
                 className="justify-start text-muted hover:text-destructive"
+                onClick={() => { onSignOut?.(); setIsMobileMenuOpen(false); }}
               >
                 Sign Out
               </Button>

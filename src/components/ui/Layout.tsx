@@ -5,13 +5,14 @@ import { Navigation } from './Navigation';
 interface LayoutProps {
   currentPage: string;
   onPageChange: (page: string) => void;
+  onSignOut?: () => void;
   children: React.ReactNode;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ currentPage, onPageChange, children }) => {
+export const Layout: React.FC<LayoutProps> = ({ currentPage, onPageChange, onSignOut, children }) => {
   return (
     <div className="min-h-screen bg-background">
-      <Navigation currentPage={currentPage} onPageChange={onPageChange} />
+      <Navigation currentPage={currentPage} onPageChange={onPageChange} onSignOut={onSignOut} />
       
       <div className="lg:ml-64">
         <motion.main

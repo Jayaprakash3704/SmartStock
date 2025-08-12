@@ -62,6 +62,12 @@ const App: React.FC = () => {
     setUser(loggedInUser);
   };
 
+  const handleSignOut = async () => {
+    await authAPI.logout();
+    setUser(null);
+    setAuthMode('signin');
+  };
+
   const renderCurrentPage = () => {
     switch (currentPage) {
       case 'products':
@@ -105,6 +111,7 @@ const App: React.FC = () => {
     <Layout 
       currentPage={currentPage} 
       onPageChange={(page) => setCurrentPage(page as typeof currentPage)}
+      onSignOut={handleSignOut}
     >
       <motion.div
         key={currentPage}
