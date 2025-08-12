@@ -51,7 +51,7 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
         case 'pdf':
           console.log('Starting PDF generation for:', reportType);
           {
-    const chartIds = [`${reportType}-charts`];
+            const chartIds = exportService.getChartContainerIdsForReport(reportType);
             const chartElements = await exportService.captureChartImages(chartIds);
             await exportService.exportToPDF(data, products, baseExportOptions, chartElements);
           }
@@ -63,8 +63,8 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
           exportService.exportToCSV(products, baseExportOptions);
           break;
         case 'all':
-          // For 'all' exports, we need chart elements for other formats
-          const chartIds = [`${reportType}-charts`];
+          // For 'all' exports, include charts for all sections when on detailed report
+          const chartIds = exportService.getChartContainerIdsForReport(reportType);
           const chartElements = await exportService.captureChartImages(chartIds);
           await exportService.exportAll(data, products, baseExportOptions, chartElements);
           break;

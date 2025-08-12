@@ -1,18 +1,20 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Navigation } from './Navigation';
+import { User } from '../../types';
 
 interface LayoutProps {
   currentPage: string;
   onPageChange: (page: string) => void;
   onSignOut?: () => void;
+  user?: User | null;
   children: React.ReactNode;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ currentPage, onPageChange, onSignOut, children }) => {
+export const Layout: React.FC<LayoutProps> = ({ currentPage, onPageChange, onSignOut, user, children }) => {
   return (
     <div className="min-h-screen bg-background">
-      <Navigation currentPage={currentPage} onPageChange={onPageChange} onSignOut={onSignOut} />
+      <Navigation currentPage={currentPage} onPageChange={onPageChange} onSignOut={onSignOut} user={user || undefined} />
 
       {/* Content below top navbar */}
       <motion.main

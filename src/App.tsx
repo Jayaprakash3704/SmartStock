@@ -106,6 +106,7 @@ const App: React.FC = () => {
       currentPage={currentPage} 
       onPageChange={(page) => setCurrentPage(page as typeof currentPage)}
       onSignOut={handleSignOut}
+  user={user}
     >
       <motion.div
         key={currentPage}

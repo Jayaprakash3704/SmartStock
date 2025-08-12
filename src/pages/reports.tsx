@@ -282,86 +282,350 @@ const ReportsEnhanced: React.FC = () => {
     return () => clearTimeout(timeoutId);
   }, [selectedReportType, dateRange, advancedFilters]);
 
-  // Render charts based on report type and data
+  // Render charts based on report type and data (distinct per section). Also render all 4 sections for 'detailed'.
   const renderCharts = useMemo(() => {
     if (!reportData) return null;
 
-    const selectedReport = REPORT_TYPES.find(r => r.id === selectedReportType);
+    // Helpers derived from products
+    const getInventoryDatasets = () => {
+      const categoryMap: Record<string, number> = {};
+      productDetails.forEach(p => {
+        const key = p.category || 'Uncategorized';
+        categoryMap[key] = (categoryMap[key] || 0) + (p.quantity || 0);
+      });
+      const categories = Object.entries(categoryMap).map(([name, value], i) => ({
+        name,
+        value,
+        color: CHART_COLORS[i % CHART_COLORS.length]
+      }));
 
-    // Build derived datasets from productDetails for consistent visuals
-    const categoryMap: Record<string, number> = {};
-    productDetails.forEach(p => {
-      const key = p.category || 'Uncategorized';
-      categoryMap[key] = (categoryMap[key] || 0) + (p.quantity || 0);
-    });
-    const categories = Object.entries(categoryMap).map(([name, value], i) => ({
-      name,
-      value,
-      color: CHART_COLORS[i % CHART_COLORS.length]
-    }));
+      const topProducts = [...productDetails]
+        .map(p => ({ name: p.name, value: (p.price || 0) * (p.quantity || 0) }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 8);
 
-    const topProducts = [...productDetails]
-      .map(p => ({ name: p.name, value: (p.price || 0) * (p.quantity || 0) }))
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 8);
+      return { categories, topProducts };
+    };
 
-    const series = topProducts.map((tp, i) => ({ index: i + 1, value: tp.value, name: tp.name }));
+    const getSalesDatasets = () => {
+      const totalRevenue = productDetails.reduce((s, p) => s + (p.price || 0) * (p.quantity || 0) * 0.6, 0);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+      const monthlySales = months.map((m, idx) => {
+        const base = totalRevenue / months.length;
+        const sales = Math.round(base * (0.9 + idx * 0.05));
+        return { month: m, sales, target: Math.round(sales * 1.1) };
+      });
+      const productPerformance = [...productDetails]
+        .sort((a, b) => (b.price || 0) - (a.price || 0))
+        .slice(0, 6)
+        .map(p => ({ name: p.name, sales: Math.round((p.price || 0) * (p.quantity || 0) * 0.6), margin: 20 + (p.quantity % 15) }));
+      const customerSegments = [
+        { segment: 'Retail', revenue: Math.round(totalRevenue * 0.45) },
+        { segment: 'Wholesale', revenue: Math.round(totalRevenue * 0.35) },
+        { segment: 'Online', revenue: Math.round(totalRevenue * 0.20) }
+      ];
+      return { monthlySales, productPerformance, customerSegments };
+    };
 
-    const containerId = `${selectedReportType}-charts`;
+    const getFinancialDatasets = () => {
+      const totalRevenue = productDetails.reduce((s, p) => s + (p.price || 0) * (p.quantity || 0) * 0.7, 0);
+      const monthly = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map((m, idx) => {
+        const rev = Math.round(totalRevenue * (0.15 + idx * 0.02));
+        const exp = Math.round(rev * 0.65);
+        return { month: m, revenue: rev, expenses: exp, profit: rev - exp };
+      });
+      const expenseCategories = [
+        { category: 'COGS', amount: Math.round(totalRevenue * 0.455) },
+        { category: 'Operations', amount: Math.round(totalRevenue * 0.15) },
+        { category: 'Marketing', amount: Math.round(totalRevenue * 0.065) },
+        { category: 'Administration', amount: Math.round(totalRevenue * 0.065) }
+      ];
+      const cashFlow = monthly.map(m => ({ month: m.month, net: m.profit }));
+      return { monthly, expenseCategories, cashFlow };
+    };
 
-    return (
-      <div id={containerId} className="glass-card" style={{ padding: '20px', marginBottom: '24px' }}>
+    const getGSTDatasets = () => {
+      const totalSales = productDetails.reduce((s, p) => s + (p.price || 0) * (p.quantity || 0) * 0.6, 0);
+      const collected = totalSales * 0.18;
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+      const monthlyGST = months.map(m => {
+        const c = Math.round(collected / months.length);
+        return { month: m, collected: c, paid: Math.round(c * 0.7), liability: Math.round(c * 0.3) };
+      });
+      const rateDistribution = [
+        { rate: '18%', amount: Math.round(collected * 0.7) },
+        { rate: '12%', amount: Math.round(collected * 0.2) },
+        { rate: '5%', amount: Math.round(collected * 0.1) }
+      ];
+      const compliance = [
+        { metric: 'Timely Filing', score: 98 },
+        { metric: 'Accurate Returns', score: 95 },
+        { metric: 'ITC Reconciliation', score: 92 },
+        { metric: 'Documentation', score: 96 }
+      ];
+      return { monthlyGST, rateDistribution, compliance };
+    };
+
+  const renderSection = (id: string, titleIcon: string, title: string, content: React.ReactNode) => (
+      <div id={id} className="glass-card" style={{ padding: '20px', marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '24px' }}>
-          <div style={{ fontSize: '28px', marginRight: '12px' }}>{selectedReport?.icon}</div>
-          <h3 style={{ fontSize: '24px', fontWeight: 700, margin: 0, color: 'var(--text)' }}>
-            {selectedReport?.name} — Analytics
-          </h3>
+          <div style={{ fontSize: '28px', marginRight: '12px' }}>{titleIcon}</div>
+          <h3 style={{ fontSize: '24px', fontWeight: 700, margin: 0, color: 'var(--text)' }}>{title}</h3>
         </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px' }}>
-          {/* Pie Chart */}
-          <div>
-            <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📊 Category Distribution</h4>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie data={categories} cx="50%" cy="50%" labelLine={false} label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`} outerRadius={100} fill="#8884d8" dataKey="value">
-                  {categories.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.color} />))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Bar Chart */}
-          <div>
-            <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📦 Stock by Category</h4>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={categories}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} interval={0} angle={-10} dy={10} />
-                <YAxis stroke="var(--text-muted)" fontSize={12} />
-                <Tooltip />
-                <Bar dataKey="value" fill="var(--primary)" radius={[4,4,0,0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Area Chart */}
-          <div>
-            <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>🏆 Top Products by Value</h4>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={series}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} />
-                <YAxis stroke="var(--text-muted)" fontSize={12} />
-                <Tooltip />
-                <Area type="monotone" dataKey="value" stroke="var(--success)" fill="var(--success)" fillOpacity={0.25} strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        {content}
       </div>
     );
+
+    const grid = (children: React.ReactNode) => (
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px' }}>{children}</div>
+    );
+
+    // Render for a single selected type
+    const renderByType = (type: string) => {
+      if (type === 'inventory') {
+        const { categories, topProducts } = getInventoryDatasets();
+        const series = topProducts.map(tp => ({ name: tp.name, value: tp.value }));
+        return renderSection(
+          'inventory-charts',
+          '📦',
+          'Inventory Analytics — Analytics',
+          grid(
+            <>
+              <div>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📊 Category Distribution</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie data={categories} cx="50%" cy="50%" labelLine={false} label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`} outerRadius={100} dataKey="value">
+                      {categories.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.color} />))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📦 Stock by Category</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={categories}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} interval={0} angle={-10} dy={10} />
+                    <YAxis stroke="var(--text-muted)" fontSize={12} />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="var(--primary)" radius={[4,4,0,0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>🏆 Top Products by Value</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={series}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} />
+                    <YAxis stroke="var(--text-muted)" fontSize={12} />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="value" stroke="var(--success)" fill="var(--success)" fillOpacity={0.25} strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </>
+          )
+        );
+      }
+
+      if (type === 'sales') {
+        const { monthlySales, productPerformance, customerSegments } = getSalesDatasets();
+        const totalSales = monthlySales.reduce((s, m) => s + m.sales, 0);
+        const topSegment = [...customerSegments].sort((a,b)=>b.revenue-a.revenue)[0];
+        const renderPieLabel = ({ name, percent, value }: any) => `${name}: Rs. ${value.toLocaleString('en-IN')} (${(percent*100).toFixed(0)}%)`;
+        return renderSection(
+          'sales-charts',
+          '💰',
+          'Sales Performance — Analytics',
+          grid(
+            <>
+              <div>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📈 Monthly Sales vs Target</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <ComposedChart data={monthlySales}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="month" stroke="var(--text-muted)" />
+                    <YAxis stroke="var(--text-muted)" />
+                    <Tooltip />
+                    <Bar dataKey="sales" fill="var(--primary)" radius={[4,4,0,0]} />
+                    <Line type="monotone" dataKey="target" stroke="var(--warning)" strokeWidth={2} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  Summary: Total Sales (6 mo) Rs. {totalSales.toLocaleString('en-IN')} · Avg per month Rs. {(Math.round(totalSales/Math.max(1,monthlySales.length))).toLocaleString('en-IN')}
+                </div>
+              </div>
+              <div>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>🏅 Product Performance</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={productPerformance}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="name" stroke="var(--text-muted)" />
+                    <YAxis stroke="var(--text-muted)" />
+                    <Tooltip />
+                    <Bar dataKey="sales" fill="var(--success)" />
+                  </BarChart>
+                </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  Summary: Top product by revenue — {productPerformance[0]?.name || 'N/A'}
+                </div>
+              </div>
+              <div>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>👥 Customer Segments</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie data={customerSegments} dataKey="revenue" nameKey="segment" cx="50%" cy="50%" outerRadius={100} label={renderPieLabel}>
+                      {customerSegments.map((s, idx)=> <Cell key={s.segment} fill={CHART_COLORS[idx%CHART_COLORS.length]} />)}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  Summary: Top segment — {topSegment?.segment} (Rs. {topSegment?.revenue.toLocaleString('en-IN')})
+                </div>
+              </div>
+            </>
+          )
+        );
+      }
+
+      if (type === 'financial') {
+        const { monthly, expenseCategories, cashFlow } = getFinancialDatasets();
+        const totalRev = monthly.reduce((s,m)=> s+m.revenue,0);
+        const totalExp = monthly.reduce((s,m)=> s+m.expenses,0);
+        const topExpense = [...expenseCategories].sort((a,b)=> b.amount-a.amount)[0];
+        const renderPieLabel = ({ name, value, percent }: any) => `${name}: Rs. ${value.toLocaleString('en-IN')} (${(percent*100).toFixed(0)}%)`;
+        return renderSection(
+          'financial-charts',
+          '📈',
+          'Financial Overview — Analytics',
+          grid(
+            <>
+              <div>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>💵 Revenue vs Expenses</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <ComposedChart data={monthly}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="month" stroke="var(--text-muted)" />
+                    <YAxis stroke="var(--text-muted)" />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="revenue" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.2} />
+                    <Area type="monotone" dataKey="expenses" stroke="var(--danger)" fill="var(--danger)" fillOpacity={0.15} />
+                    <Line type="monotone" dataKey="profit" stroke="var(--success)" strokeWidth={2} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  Summary: Total Revenue Rs. {totalRev.toLocaleString('en-IN')} · Total Expenses Rs. {totalExp.toLocaleString('en-IN')} · Net Rs. {(totalRev-totalExp).toLocaleString('en-IN')}
+                </div>
+              </div>
+              <div>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>🧾 Expense Categories</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie data={expenseCategories} dataKey="amount" nameKey="category" cx="50%" cy="50%" outerRadius={100} label={renderPieLabel}>
+                      {expenseCategories.map((e, idx)=>(<Cell key={e.category} fill={CHART_COLORS[idx%CHART_COLORS.length]} />))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  Summary: Top expense — {topExpense?.category} (Rs. {topExpense?.amount.toLocaleString('en-IN')})
+                </div>
+              </div>
+              <div>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>💧 Cash Flow (Net)</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={cashFlow}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="month" stroke="var(--text-muted)" />
+                    <YAxis stroke="var(--text-muted)" />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="net" stroke="var(--info)" fill="var(--info)" fillOpacity={0.2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  Summary: Best month — {cashFlow.reduce((a,b)=> a.net>b.net?a:b, cashFlow[0])?.month}
+                </div>
+              </div>
+            </>
+          )
+        );
+      }
+
+      if (type === 'gst') {
+        const { monthlyGST, rateDistribution, compliance } = getGSTDatasets();
+        const totalCollected = monthlyGST.reduce((s,m)=> s+m.collected,0);
+        const renderPieLabel = ({ name, value, percent }: any) => `${name}: Rs. ${value.toLocaleString('en-IN')} (${(percent*100).toFixed(0)}%)`;
+        return renderSection(
+          'gst-charts',
+          '🧾',
+          'Tax & Compliance — Analytics',
+          grid(
+            <>
+              <div>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📅 Monthly GST Trend</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <ComposedChart data={monthlyGST}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="month" stroke="var(--text-muted)" />
+                    <YAxis stroke="var(--text-muted)" />
+                    <Tooltip />
+                    <Bar dataKey="collected" fill="var(--primary)" />
+                    <Line type="monotone" dataKey="liability" stroke="var(--danger)" />
+                  </ComposedChart>
+                </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  Summary: GST Collected (6 mo) Rs. {totalCollected.toLocaleString('en-IN')}
+                </div>
+              </div>
+              <div>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📊 GST Rate Distribution</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie data={rateDistribution} dataKey="amount" nameKey="rate" cx="50%" cy="50%" outerRadius={100} label={renderPieLabel}>
+                      {rateDistribution.map((r, idx)=>(<Cell key={r.rate} fill={CHART_COLORS[idx%CHART_COLORS.length]} />))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>✅ Compliance Metrics</h4>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={compliance}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis dataKey="metric" stroke="var(--text-muted)" />
+                    <YAxis stroke="var(--text-muted)" />
+                    <Tooltip />
+                    <Bar dataKey="score" fill="var(--success)" />
+                  </BarChart>
+                </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  Summary: Average compliance score {Math.round(compliance.reduce((s,c)=> s+c.score,0)/Math.max(1,compliance.length))}%
+                </div>
+              </div>
+            </>
+          )
+        );
+      }
+      return null;
+    };
+
+    if (selectedReportType === 'detailed') {
+      return (
+        <>
+          {renderByType('inventory')}
+          {renderByType('sales')}
+          {renderByType('financial')}
+          {renderByType('gst')}
+        </>
+      );
+    }
+
+    return renderByType(selectedReportType);
   }, [reportData, selectedReportType, productDetails]);
 
   return (
@@ -457,18 +721,16 @@ const ReportsEnhanced: React.FC = () => {
         </div>
       </div>
 
-      {/* Export Section - Only for Detailed Report */}
-  {selectedReportType === 'detailed' && (
-        <ExportButtons
-          data={reportData}
-          products={productDetails}
-          reportType={selectedReportType}
-          dateRange={dateRange}
-          isLoading={isGenerating}
-        />
-      )}
+      {/* Export Section - Shown for all report types; Detailed combines all sections */}
+      <ExportButtons
+        data={reportData}
+        products={productDetails}
+        reportType={selectedReportType}
+        dateRange={dateRange}
+        isLoading={isGenerating}
+      />
 
-      {/* Detailed Product Data - Only for Detailed Report */}
+  {/* Detailed Product Data - Only for Detailed Report */}
   {selectedReportType === 'detailed' && (
         <ProductDataTable 
           products={productDetails} 

@@ -25,28 +25,24 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
 }) => {
   return (
     <div style={{
-      background: 'rgba(255, 255, 255, 0.95)',
-      backdropFilter: 'blur(20px)',
-      borderRadius: '20px',
-      padding: '32px',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+      background: 'var(--surface)',
+      borderRadius: '16px',
+      padding: '24px',
+      border: '1px solid var(--border)',
+      boxShadow: 'var(--shadow)',
       marginBottom: '24px'
     }}>
       <div style={{
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'between',
+  justifyContent: 'space-between',
         marginBottom: '24px'
       }}>
         <h3 style={{
           fontSize: '20px',
           fontWeight: '700',
           margin: 0,
-          background: 'linear-gradient(135deg, #667eea, #764ba2)',
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent'
+          color: 'var(--text)'
         }}>
           🔍 Advanced Filters & Analytics
         </h3>
@@ -55,9 +51,9 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           style={{
             padding: '8px 16px',
             borderRadius: '8px',
-            border: '1px solid #e5e7eb',
-            background: 'white',
-            color: '#6b7280',
+            border: '1px solid var(--border)',
+            background: 'var(--surface-2)',
+            color: 'var(--text-muted)',
             fontSize: '14px',
             cursor: 'pointer',
             transition: 'all 0.2s'
@@ -73,7 +69,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           display: 'block', 
           fontSize: '14px', 
           fontWeight: '600', 
-          color: '#374151',
+      color: 'var(--text)',
           marginBottom: '8px'
         }}>
           📅 Quick Date Ranges
@@ -97,9 +93,9 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               style={{
                 padding: '8px 12px',
                 borderRadius: '8px',
-                border: filters.quickDateRange === preset.value ? '2px solid #667eea' : '1px solid #e5e7eb',
-                background: filters.quickDateRange === preset.value ? 'rgba(102, 126, 234, 0.1)' : 'white',
-                color: filters.quickDateRange === preset.value ? '#667eea' : '#6b7280',
+        border: filters.quickDateRange === preset.value ? '2px solid var(--primary)' : '1px solid var(--border)',
+        background: filters.quickDateRange === preset.value ? 'color-mix(in srgb, var(--primary) 12%, transparent)' : 'var(--surface-2)',
+        color: filters.quickDateRange === preset.value ? 'var(--primary)' : 'var(--text-muted)',
                 fontSize: '13px',
                 fontWeight: '500',
                 cursor: 'pointer',
@@ -120,16 +116,16 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           gap: '16px',
           marginBottom: '20px',
           padding: '16px',
-          background: 'rgba(102, 126, 234, 0.05)',
+          background: 'var(--surface-2)',
           borderRadius: '12px',
-          border: '1px solid rgba(102, 126, 234, 0.1)'
+          border: '1px solid var(--border)'
         }}>
           <div>
             <label style={{ 
               display: 'block', 
               fontSize: '13px', 
               fontWeight: '600', 
-              color: '#374151',
+              color: 'var(--text)',
               marginBottom: '6px'
             }}>
               Start Date
@@ -142,7 +138,9 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 width: '100%',
                 padding: '8px 12px',
                 borderRadius: '8px',
-                border: '1px solid #e5e7eb',
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text)',
                 fontSize: '14px'
               }}
             />
@@ -152,7 +150,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               display: 'block', 
               fontSize: '13px', 
               fontWeight: '600', 
-              color: '#374151',
+              color: 'var(--text)',
               marginBottom: '6px'
             }}>
               End Date
@@ -165,7 +163,9 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
                 width: '100%',
                 padding: '8px 12px',
                 borderRadius: '8px',
-                border: '1px solid #e5e7eb',
+                border: '1px solid var(--border)',
+                background: 'var(--surface)',
+                color: 'var(--text)',
                 fontSize: '14px'
               }}
             />
@@ -186,7 +186,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             display: 'block', 
             fontSize: '13px', 
             fontWeight: '600', 
-            color: '#374151',
+            color: 'var(--text)',
             marginBottom: '6px'
           }}>
             🏷️ Category
@@ -198,9 +198,10 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               width: '100%',
               padding: '8px 12px',
               borderRadius: '8px',
-              border: '1px solid #e5e7eb',
+              border: '1px solid var(--border)',
               fontSize: '14px',
-              background: 'white'
+              background: 'var(--surface)',
+              color: 'var(--text)'
             }}
           >
             <option value="">All Categories</option>
@@ -216,7 +217,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             display: 'block', 
             fontSize: '13px', 
             fontWeight: '600', 
-            color: '#374151',
+            color: 'var(--text)',
             marginBottom: '6px'
           }}>
             🏢 Supplier
@@ -228,9 +229,10 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               width: '100%',
               padding: '8px 12px',
               borderRadius: '8px',
-              border: '1px solid #e5e7eb',
+              border: '1px solid var(--border)',
               fontSize: '14px',
-              background: 'white'
+              background: 'var(--surface)',
+              color: 'var(--text)'
             }}
           >
             <option value="">All Suppliers</option>
@@ -246,7 +248,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             display: 'block', 
             fontSize: '13px', 
             fontWeight: '600', 
-            color: '#374151',
+            color: 'var(--text)',
             marginBottom: '6px'
           }}>
             📍 Location
@@ -258,9 +260,10 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               width: '100%',
               padding: '8px 12px',
               borderRadius: '8px',
-              border: '1px solid #e5e7eb',
+              border: '1px solid var(--border)',
               fontSize: '14px',
-              background: 'white'
+              background: 'var(--surface)',
+              color: 'var(--text)'
             }}
           >
             <option value="">All Locations</option>
@@ -276,7 +279,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             display: 'block', 
             fontSize: '13px', 
             fontWeight: '600', 
-            color: '#374151',
+            color: 'var(--text)',
             marginBottom: '6px'
           }}>
             📦 Stock Level
@@ -288,9 +291,10 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               width: '100%',
               padding: '8px 12px',
               borderRadius: '8px',
-              border: '1px solid #e5e7eb',
+              border: '1px solid var(--border)',
               fontSize: '14px',
-              background: 'white'
+              background: 'var(--surface)',
+              color: 'var(--text)'
             }}
           >
             <option value="all">All Stock</option>
@@ -315,7 +319,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             display: 'block', 
             fontSize: '13px', 
             fontWeight: '600', 
-            color: '#374151',
+            color: 'var(--text)',
             marginBottom: '6px'
           }}>
             🔍 Search Products
@@ -329,7 +333,9 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               width: '100%',
               padding: '8px 12px',
               borderRadius: '8px',
-              border: '1px solid #e5e7eb',
+              border: '1px solid var(--border)',
+              background: 'var(--surface)',
+              color: 'var(--text)',
               fontSize: '14px'
             }}
           />
@@ -341,7 +347,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             display: 'block', 
             fontSize: '13px', 
             fontWeight: '600', 
-            color: '#374151',
+            color: 'var(--text)',
             marginBottom: '6px'
           }}>
             📊 Sort By
@@ -353,9 +359,10 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               width: '100%',
               padding: '8px 12px',
               borderRadius: '8px',
-              border: '1px solid #e5e7eb',
+              border: '1px solid var(--border)',
               fontSize: '14px',
-              background: 'white'
+              background: 'var(--surface)',
+              color: 'var(--text)'
             }}
           >
             <option value="name">Name</option>
@@ -372,7 +379,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             display: 'block', 
             fontSize: '13px', 
             fontWeight: '600', 
-            color: '#374151',
+            color: 'var(--text)',
             marginBottom: '6px'
           }}>
             🔄 Order
@@ -384,9 +391,10 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
               width: '100%',
               padding: '8px 12px',
               borderRadius: '8px',
-              border: '1px solid #e5e7eb',
+              border: '1px solid var(--border)',
               fontSize: '14px',
-              background: 'white'
+              background: 'var(--surface)',
+              color: 'var(--text)'
             }}
           >
             <option value="asc">Ascending</option>

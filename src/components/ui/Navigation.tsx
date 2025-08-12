@@ -13,11 +13,14 @@ import {
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from './Button';
+import { NotificationBell } from './NotificationBell';
+import type { User } from '../../types';
 
 interface NavigationProps {
   currentPage: string;
   onPageChange: (page: string) => void;
   onSignOut?: () => void;
+  user?: User;
 }
 
 const navigationItems = [
@@ -28,8 +31,17 @@ const navigationItems = [
   { id: 'users', label: 'Users', sub: 'Team & Roles', icon: Users },
 ];
 
-export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange, onSignOut }) => {
+export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange, onSignOut, user }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const displayName = (user?.username || user?.email || 'Admin') as string;
+  const initials = displayName
+    .replace(/[^A-Za-z ]/g, '')
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((s) => s[0]?.toUpperCase())
+    .join('') || 'A';
 
   const MobileNavItem: React.FC<{ item: typeof navigationItems[0] }> = ({ item }) => {
     const isActive = currentPage === item.id;
@@ -184,6 +196,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
+              <NotificationBell />
               <motion.button
                 onClick={() => onPageChange('settings')}
                 className="p-2.5 rounded-xl text-muted hover:text-foreground hover:bg-accent/30 transition-all duration-200"
@@ -194,7 +207,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
               </motion.button>
               
               <ThemeToggle />
-              
+
               <motion.button
                 onClick={onSignOut}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
@@ -204,6 +217,17 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
                 <LogOut size={16} />
                 <span className="hidden xl:inline">Sign Out</span>
               </motion.button>
+
+              {/* User chip (after Sign Out) */}
+              <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-xl border border-border/60 bg-card shadow-sm">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary via-primary/80 to-primary/60 text-white flex items-center justify-center text-xs font-bold shadow-primary/30 shadow">
+                  {initials}
+                </div>
+                <div className="leading-tight">
+                  <div className="text-sm font-semibold max-w-[8rem] truncate">{displayName}</div>
+                  <div className="text-[11px] text-muted">{user?.role ?? 'admin'}</div>
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>
@@ -304,7 +328,17 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
               </motion.div>
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/30 bg-gradient-to-t from-card/50 to-transparent backdrop-blur-sm">
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border/30 bg-card">
+              {/* Mobile user chip */}
+              <div className="flex items-center gap-3 px-3 py-2 mb-3 rounded-xl border border-border/60 bg-card">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary via-primary/80 to-primary/60 text-white flex items-center justify-center text-sm font-bold">
+                  {initials}
+                </div>
+                <div className="leading-tight">
+                  <div className="text-sm font-semibold">{displayName}</div>
+                  <div className="text-[11px] text-muted">{user?.role ?? 'admin'}</div>
+                </div>
+              </div>
               <motion.button
                 onClick={() => { onSignOut?.(); setIsMobileMenuOpen(false); }}
                 className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left font-medium text-muted hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
