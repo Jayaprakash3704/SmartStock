@@ -26,7 +26,6 @@ const navigationItems = [
   { id: 'products', label: 'Products', sub: 'Catalog & Pricing', icon: ShoppingCart },
   { id: 'reports', label: 'Reports', sub: 'Sales & Insights', icon: BarChart3 },
   { id: 'users', label: 'Users', sub: 'Team & Roles', icon: Users },
-  { id: 'settings', label: 'Settings', sub: 'Preferences', icon: Settings },
 ];
 
 export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange, onSignOut }) => {
@@ -91,50 +90,61 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
 
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* Desktop Top Navigation */}
       <motion.nav
-        className="hidden lg:flex lg:flex-col lg:w-64 bg-card border-r border-border h-screen sticky top-0"
-        initial={{ x: -100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="hidden lg:flex items-center justify-between h-16 px-6 bg-card border-b border-border sticky top-0 z-40"
+        initial={{ y: -40, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.35, ease: "easeOut" }}
       >
-        <div className="p-6 border-b border-border">
-          <motion.div
-            className="flex items-center gap-3"
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
-              <Package className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold font-display">SmartStock</h1>
-              <p className="text-sm text-muted">Inventory System</p>
-            </div>
-          </motion.div>
+        {/* Brand */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center shadow-sm">
+            <Package className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold font-display leading-5">SmartStock</h1>
+            <p className="text-xs text-muted">Inventory System</p>
+          </div>
         </div>
 
-        <div className="flex-1 p-4 space-y-2">
-          {navigationItems.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 * index }}
-            >
-              <NavItem item={item} />
-            </motion.div>
-          ))}
+        {/* Horizontal Nav Items (5) */}
+        <div className="flex items-center gap-2">
+          {navigationItems.map((item) => {
+            const isActive = currentPage === item.id;
+            const Icon = item.icon;
+            return (
+              <motion.button
+                key={item.id}
+                onClick={() => onPageChange(item.id)}
+                className={`relative px-4 py-2 rounded-full text-sm font-medium transition-colors group ${
+                  isActive ? 'bg-primary text-white' : 'text-muted hover:text-foreground hover:bg-accent/40'
+                }`}
+                whileHover={{ y: -1, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <span className="absolute inset-0 rounded-full bg-white/0 group-hover:bg-white/5 transition-colors" />
+                <span className="relative z-10 inline-flex items-center gap-2">
+                  <Icon size={16} className={isActive ? 'text-white' : ''} />
+                  {item.label}
+                </span>
+              </motion.button>
+            );
+          })}
         </div>
 
-        <div className="p-4 border-t border-border space-y-3">
-          <ThemeToggle className="w-full justify-center" />
+        {/* Utilities */}
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" className="hidden xl:flex">
+            <Settings size={16} />
+            <span className="sr-only">Settings</span>
+          </Button>
+          <ThemeToggle />
           <Button
             variant="ghost"
-            fullWidth
+            size="sm"
             icon={<LogOut size={16} />}
-            className="justify-start text-muted hover:text-destructive"
+            className="text-muted hover:text-destructive"
             onClick={() => onSignOut?.()}
           >
             Sign Out
@@ -142,7 +152,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
         </div>
       </motion.nav>
 
-      {/* Mobile Header */}
+  {/* Mobile Header */}
       <motion.header
         className="lg:hidden bg-card border-b border-border sticky top-0 z-40"
         initial={{ y: -100 }}
@@ -220,6 +230,14 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
                   <NavItem item={item} isMobile />
                 </motion.div>
               ))}
+              {/* Settings as a mobile item */}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.05 * (navigationItems.length + 1) }}
+              >
+                <NavItem item={{ id: 'settings', label: 'Settings', sub: 'Preferences', icon: Settings } as any} isMobile />
+              </motion.div>
             </div>
 
             <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">

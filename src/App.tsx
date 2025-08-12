@@ -92,17 +92,11 @@ const App: React.FC = () => {
   if (!user) {
     return authMode === 'signin' ? (
       <div>
-        <SignIn onLogin={handleLogin} />
-        <div className="text-center mt-4">
-          <button className="btn-link" onClick={() => setAuthMode('signup')}>Create an account</button>
-        </div>
+        <SignIn onLogin={handleLogin} onSwitchToSignUp={() => setAuthMode('signup')} />
       </div>
     ) : (
       <div>
         <SignUp onRegister={handleLogin} onSwitchToSignIn={() => setAuthMode('signin')} />
-        <div className="text-center mt-4">
-          <button className="btn-link" onClick={() => setAuthMode('signin')}>Back to Sign In</button>
-        </div>
       </div>
     );
   }

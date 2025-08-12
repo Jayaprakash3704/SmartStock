@@ -7,6 +7,7 @@ import { Card } from '../components/ui/Card';
 
 interface SignInProps {
   onLogin: (user: User) => void;
+  onSwitchToSignUp?: () => void;
 }
 
 const containerVariants: Variants = {
@@ -26,7 +27,7 @@ const fieldVariants: Variants = {
   animate: (i: number) => ({ opacity: 1, y: 0, transition: { delay: 0.08 * i } }),
 };
 
-export default function SignIn({ onLogin }: SignInProps) {
+export default function SignIn({ onLogin, onSwitchToSignUp }: SignInProps) {
   const prefersReducedMotion = useReducedMotion();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -160,14 +161,35 @@ export default function SignIn({ onLogin }: SignInProps) {
                 </motion.div>
               )}
 
-              <Button type="submit" loading={isLoading} fullWidth size="lg" className="font-semibold">
-                Sign In
-              </Button>
-              <Button type="button" variant="outline" fullWidth onClick={async () => { const res = await authAPI.loginWithGoogle(); if (res.success) onLogin(res.data.user); else setError(res.error || 'Google login failed'); }}>Sign in with Google</Button>
+              {/* Primary actions */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Button type="submit" loading={isLoading} fullWidth size="lg" className="font-semibold">
+                  Sign In
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  fullWidth
+                  onClick={async () => {
+                    const res = await authAPI.loginWithGoogle();
+                    if (res.success) onLogin(res.data.user); else setError(res.error || 'Google login failed');
+                  }}
+                >
+                  Sign in with Google
+                </Button>
+              </div>
+
+              {/* Create account CTA */}
+              <p className="helper-text text-center">
+                New here?{' '}
+                <button type="button" className="btn-link" onClick={() => onSwitchToSignUp?.()}>
+                  Create an account
+                </button>
+              </p>
             </form>
 
             <motion.p className="helper-text text-center mt-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              Tip: Use your registered email and password. New here? Ask admin to enable Sign Up.
+              Tip: Use your registered email and password. If Sign Up is restricted, contact the admin.
             </motion.p>
           </Card>
         </motion.div>
