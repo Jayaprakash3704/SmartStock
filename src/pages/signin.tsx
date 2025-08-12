@@ -163,10 +163,11 @@ export default function SignIn({ onLogin }: SignInProps) {
               <Button type="submit" loading={isLoading} fullWidth size="lg" className="font-semibold">
                 Sign In
               </Button>
+              <Button type="button" variant="outline" fullWidth onClick={async () => { const res = await authAPI.loginWithGoogle(); if (res.success) onLogin(res.data.user); else setError(res.error || 'Google login failed'); }}>Sign in with Google</Button>
             </form>
 
             <motion.p className="helper-text text-center mt-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              Tip: Use your registered email and password
+              Tip: Use your registered email and password. New here? Ask admin to enable Sign Up.
             </motion.p>
           </Card>
         </motion.div>

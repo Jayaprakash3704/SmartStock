@@ -20,12 +20,12 @@ interface NavigationProps {
 }
 
 const navigationItems = [
-  { id: 'dashboard', label: 'Dashboard', icon: Home },
-  { id: 'inventory', label: 'Inventory', icon: Package },
-  { id: 'products', label: 'Products', icon: ShoppingCart },
-  { id: 'reports', label: 'Reports', icon: BarChart3 },
-  { id: 'users', label: 'Users', icon: Users },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'dashboard', label: 'Dashboard', sub: 'Overview & KPIs', icon: Home },
+  { id: 'inventory', label: 'Inventory', sub: 'Stock & Reorders', icon: Package },
+  { id: 'products', label: 'Products', sub: 'Catalog & Pricing', icon: ShoppingCart },
+  { id: 'reports', label: 'Reports', sub: 'Sales & Insights', icon: BarChart3 },
+  { id: 'users', label: 'Users', sub: 'Team & Roles', icon: Users },
+  { id: 'settings', label: 'Settings', sub: 'Preferences', icon: Settings },
 ];
 
 export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChange }) => {
@@ -73,6 +73,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
         />
         <span className={`relative z-10 font-medium ${isActive ? 'text-white' : ''}`}>
           {item.label}
+          <span className={`block text-xs ${isActive ? 'text-white/80' : 'text-muted'} mt-0.5`}>{item.sub}</span>
         </span>
         
         {isActive && (

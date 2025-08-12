@@ -2,7 +2,8 @@ import { Product, User, DashboardStats, ApiResponse, ProductFormData, LoginFormD
 import { generateId } from '../utils/helpers';
 import { getAuthInstance, getDbInstance, isFirebaseEnabled } from './firebase';
 import { 
-  signInWithEmailAndPassword, signOut, onAuthStateChanged, type User as FirebaseUser
+  signInWithEmailAndPassword, signOut, onAuthStateChanged, type User as FirebaseUser,
+  GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, updateProfile
 } from 'firebase/auth';
 import { 
   collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc, serverTimestamp, query, where
@@ -300,6 +301,69 @@ export const authAPI = {
       return { success: false, data: {} as any, error: 'Invalid credentials' };
     } catch (error: any) {
       return { success: false, data: {} as any, error: error?.message || 'Login failed' };
+    }
+  },
+  register: async (email: string, password: string, displayName?: string): Promise<ApiResponse<{ user: User; token: string }>> => {
+    try {
+      if (isFirebaseEnabled()) {
+        const auth = getAuthInstance();
+        if (!auth) throw new Error('Auth not initialized');
+        const res = await createUserWithEmailAndPassword(auth, email, password);
+        if (displayName) await updateProfile(res.user, { displayName });
+        const fbUser = res.user;
+        const user: User = {
+          id: fbUser.uid,
+          username: fbUser.email || fbUser.uid,
+          email: fbUser.email || '',
+          role: 'manager',
+          isActive: true,
+          permissions: ['products:read','inventory:read','reports:read'],
+          lastLogin: new Date(),
+        };
+        const token = await fbUser.getIdToken();
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        return { success: true, data: { user, token }, message: 'Registration successful' };
+      }
+      // Mock registration
+      await delay(500);
+      const user: User = {
+        id: generateId(), username: email, email, role: 'manager', isActive: true,
+        permissions: ['products:read','inventory:read','reports:read'], lastLogin: new Date(),
+      };
+      const token = 'mock-jwt-token';
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      return { success: true, data: { user, token }, message: 'Registration successful' };
+    } catch (error: any) {
+      return { success: false, data: {} as any, error: error?.message || 'Registration failed' };
+    }
+  },
+  loginWithGoogle: async (): Promise<ApiResponse<{ user: User; token: string }>> => {
+    try {
+      if (!isFirebaseEnabled()) {
+        return { success: false, data: {} as any, error: 'Google Sign-In requires Firebase' };
+      }
+      const auth = getAuthInstance();
+      if (!auth) throw new Error('Auth not initialized');
+      const provider = new GoogleAuthProvider();
+      const res = await signInWithPopup(auth, provider);
+      const fbUser = res.user;
+      const user: User = {
+        id: fbUser.uid,
+        username: fbUser.email || fbUser.uid,
+        email: fbUser.email || '',
+        role: 'manager',
+        isActive: true,
+        permissions: ['products:read','inventory:read','reports:read'],
+        lastLogin: new Date(),
+      };
+      const token = await fbUser.getIdToken();
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('currentUser', JSON.stringify(user));
+      return { success: true, data: { user, token }, message: 'Login successful' };
+    } catch (error: any) {
+      return { success: false, data: {} as any, error: error?.message || 'Google login failed' };
     }
   },
 

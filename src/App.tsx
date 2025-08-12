@@ -21,11 +21,13 @@ import Users from './pages/users';
 
 // Dedicated Sign In page
 import SignIn from './pages/signin';
+import SignUp from './pages/signup';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'products' | 'inventory' | 'reports' | 'settings' | 'users'>('dashboard');
   const [isLoading, setIsLoading] = useState(true);
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
 
   useEffect(() => {
     const currentUser = authAPI.getCurrentUser();
@@ -82,7 +84,21 @@ const App: React.FC = () => {
   }
 
   if (!user) {
-    return <SignIn onLogin={handleLogin} />;
+    return authMode === 'signin' ? (
+      <div>
+        <SignIn onLogin={handleLogin} />
+        <div className="text-center mt-4">
+          <button className="btn-link" onClick={() => setAuthMode('signup')}>Create an account</button>
+        </div>
+      </div>
+    ) : (
+      <div>
+        <SignUp onRegister={handleLogin} onSwitchToSignIn={() => setAuthMode('signin')} />
+        <div className="text-center mt-4">
+          <button className="btn-link" onClick={() => setAuthMode('signin')}>Back to Sign In</button>
+        </div>
+      </div>
+    );
   }
 
   return (
