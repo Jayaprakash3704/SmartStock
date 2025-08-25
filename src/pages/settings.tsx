@@ -5,7 +5,8 @@ import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { notificationManager } from '../services/notificationManager';
 import { AppSettings, BusinessSettings, CurrencySettings, INDIAN_CURRENCY } from '../types';
 import { useCurrency, AVAILABLE_CURRENCIES } from '../contexts/CurrencyContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../contexts/ThemeContextNew';
+import { initializeMockData, addExtendedMockData } from '../services/mockDataInitializer';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -16,7 +17,7 @@ const LANGUAGES = [
 
 const Settings: React.FC = () => {
   const { currentCurrency, setCurrency, formatCurrency } = useCurrency();
-  const { preference: themePreference, setPreference: setThemePreference } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<'business' | 'preferences' | 'security' | 'integrations'>('business');
   const [settings, setSettings] = useState<AppSettings>({
     business: {
@@ -73,6 +74,7 @@ const Settings: React.FC = () => {
   });
   const [isTestingEmail, setIsTestingEmail] = useState(false);
   const [testEmail, setTestEmail] = useState(localStorage.getItem('smtp_test_to') || settings.business.email || '');
+  const [isInitializingData, setIsInitializingData] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -334,17 +336,16 @@ const Settings: React.FC = () => {
                 <div className="form-group">
                   <label className="form-label">Theme</label>
                   <select
-                    value={themePreference}
+                    value={theme}
                     onChange={(e) => {
-                      const pref = e.target.value as 'light' | 'dark' | 'system';
-                      setThemePreference(pref);
-                      updatePreferences('theme', pref);
+                      const selectedTheme = e.target.value as 'light' | 'dark';
+                      setTheme(selectedTheme);
+                      updatePreferences('theme', selectedTheme);
                     }}
                     className="modern-select"
                   >
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
-                    <option value="system">System</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -537,13 +538,67 @@ const Settings: React.FC = () => {
 
                 <div className="glass-card" style={{ padding: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <h4 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>Demo Data Management</h4>
+                    <button 
+                      className="btn-primary" 
+                      style={{ fontSize: '12px', padding: '6px 12px' }}
+                      onClick={async () => {
+                        setIsInitializingData(true);
+                        try {
+                          await initializeMockData();
+                          notificationManager.showSuccess('Demo Data', 'Comprehensive demo data loaded successfully!');
+                        } catch (error) {
+                          notificationManager.showError('Demo Data', 'Failed to load demo data');
+                        } finally {
+                          setIsInitializingData(false);
+                        }
+                      }}
+                      disabled={isInitializingData}
+                    >
+                      {isInitializingData ? 'Loading...' : 'Load Demo Data'}
+                    </button>
+                  </div>
+                  <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>
+                    Load comprehensive demo data with 28+ products across 10+ categories for demonstration
+                  </p>
+                </div>
+
+                <div className="glass-card" style={{ padding: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <h4 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>Extended Demo Data</h4>
+                    <button 
+                      className="btn-secondary" 
+                      style={{ fontSize: '12px', padding: '6px 12px' }}
+                      onClick={async () => {
+                        setIsInitializingData(true);
+                        try {
+                          await addExtendedMockData();
+                          notificationManager.showSuccess('Extended Data', 'Additional demo products added!');
+                        } catch (error) {
+                          notificationManager.showError('Extended Data', 'Failed to add extended data');
+                        } finally {
+                          setIsInitializingData(false);
+                        }
+                      }}
+                      disabled={isInitializingData}
+                    >
+                      {isInitializingData ? 'Adding...' : 'Add More Products'}
+                    </button>
+                  </div>
+                  <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>
+                    Add even more variety to the product catalog for extensive demonstrations
+                  </p>
+                </div>
+
+                <div className="glass-card" style={{ padding: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                     <h4 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>Cloud Backup</h4>
                     <button className="btn-primary" style={{ fontSize: '12px', padding: '6px 12px' }}>
                       Connected
                     </button>
                   </div>
                   <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>
-                    Automatic daily backups to secure cloud storage
+                    Automatic daily backups to secure cloud storage (Firebase)
                   </p>
                 </div>
               </div>

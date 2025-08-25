@@ -237,20 +237,35 @@ class ExportService {
 
         try {
           const canvas = await html2canvas(chartElement, {
-            scale: 1,
+            scale: 2,
             logging: false,
             useCORS: true,
-            allowTaint: true
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            removeContainer: true,
+            foreignObjectRendering: true,
+            imageTimeout: 15000,
+            onclone: (clonedDoc) => {
+              // Force light theme colors for PDF export
+              const clonedCharts = clonedDoc.querySelectorAll('.recharts-wrapper');
+              clonedCharts.forEach(chart => {
+                (chart as HTMLElement).style.backgroundColor = '#ffffff';
+              });
+            }
           });
           
-          const imgData = canvas.toDataURL('image/png');
-          const imgWidth = Math.min(pageWidth - margin * 2, canvas.width * 0.42);
+          const imgData = canvas.toDataURL('image/png', 1.0);
+          const imgWidth = Math.min(pageWidth - margin * 2, canvas.width * 0.3);
           const imgHeight = (canvas.height * imgWidth) / canvas.width;
           
           doc.addImage(imgData, 'PNG', margin, yPosition, imgWidth, imgHeight);
-          yPosition += imgHeight + 10;
+          yPosition += imgHeight + 15;
         } catch (error) {
           console.warn('Could not capture chart:', error);
+          // Add fallback text when chart capture fails
+          doc.setFontSize(10);
+          doc.text('Chart could not be rendered in PDF', margin, yPosition);
+          yPosition += 20;
         }
       }
     }

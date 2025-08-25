@@ -1,9 +1,11 @@
 {
   "firestore": {
-    "rules": "firestore.rules"
+    "database": "(default)",
+    "location": "asia-south1",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "site": "smartstock-333",
     "public": "build",
     "ignore": [
       "firebase.json",

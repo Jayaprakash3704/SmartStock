@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>SmartStock Logo</title>
+</head>
+<body style="margin: 0; padding: 20px; background: #f0f0f0;">
+    <svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background gradient -->
+        <defs>
+            <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+        
+        <!-- Logo Icon -->
+        <rect x="5" y="8" width="44" height="44" rx="8" fill="url(#gradient)"/>
+        
+        <!-- Box icon inside -->
+        <rect x="12" y="18" width="12" height="8" rx="1" fill="white" opacity="0.9"/>
+        <rect x="26" y="18" width="12" height="8" rx="1" fill="white" opacity="0.7"/>
+        <rect x="12" y="28" width="12" height="8" rx="1" fill="white" opacity="0.8"/>
+        <rect x="26" y="28" width="12" height="8" rx="1" fill="white" opacity="0.6"/>
+        <rect x="12" y="38" width="26" height="6" rx="1" fill="white" opacity="0.9"/>
+        
+        <!-- Smart indicator dot -->
+        <circle cx="42" cy="15" r="3" fill="#10b981"/>
+        
+        <!-- Text -->
+        <text x="58" y="28" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="url(#textGradient)">Smart</text>
+        <text x="58" y="45" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="url(#textGradient)">Stock</text>
+    </svg>
+</body>
+</html>

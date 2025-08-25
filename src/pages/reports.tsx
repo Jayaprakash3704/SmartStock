@@ -26,6 +26,7 @@ import {
 import { Product } from '../types';
 import { formatIndianNumber } from '../utils/helpers';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { useTheme } from '../contexts/ThemeContextNew';
 import reportService from '../services/reportService_new';
 import { productsAPI } from '../services/api';
 import AdvancedFilters from '../components/AdvancedFilters';
@@ -82,9 +83,61 @@ const REPORT_TYPES = [
 ];
 
 const CHART_COLORS = [
-  '#667eea', '#f5576c', '#4facfe', '#43e97b', '#fa709a', '#764ba2',
-  '#ffd89b', '#19547b', '#667db6', '#84fab0', '#8fd3f4', '#96e6a1'
+  '#667eea', '#5a67d8', '#4f56d3', '#764ba2', '#6b46c1', '#8b5cf6',
+  '#3b82f6', '#1d4ed8', '#1e40af', '#60a5fa', '#93c5fd', '#dbeafe'
 ];
+
+// Meaningful color scheme for different data types
+const COLOR_SCHEME = {
+  success: '#10b981',      // Green - Good performance, high values
+  warning: '#f59e0b',      // Orange - Medium performance, caution
+  danger: '#ef4444',       // Red - Low performance, urgent attention
+  primary: '#667eea',      // Blue - Primary data, revenue
+  secondary: '#764ba2',    // Purple - Secondary data, targets
+  info: '#06b6d4',         // Cyan - Information, neutral data
+  neutral: '#6b7280'       // Gray - Baseline, average
+};
+
+// Application-consistent chart colors based on blue theme with meaningful assignments
+const getChartColors = (theme: 'light' | 'dark') => {
+  if (theme === 'dark') {
+    return [
+      COLOR_SCHEME.primary,    // Primary blue
+      COLOR_SCHEME.success,    // Success green  
+      COLOR_SCHEME.warning,    // Warning orange
+      COLOR_SCHEME.danger,     // Danger red
+      COLOR_SCHEME.secondary,  // Secondary purple
+      COLOR_SCHEME.info,       // Info cyan
+      '#5a67d8', '#4f56d3', '#6b46c1', '#8b5cf6', '#a78bfa', '#93c5fd'
+    ];
+  }
+  return [
+    COLOR_SCHEME.primary,    // Primary blue
+    COLOR_SCHEME.success,    // Success green
+    COLOR_SCHEME.warning,    // Warning orange  
+    COLOR_SCHEME.danger,     // Danger red
+    COLOR_SCHEME.secondary,  // Secondary purple
+    COLOR_SCHEME.info,       // Info cyan
+    '#1d4ed8', '#1e40af', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd'
+  ];
+};
+
+// Theme-aware chart configuration
+const getChartConfig = (theme: 'light' | 'dark') => ({
+  backgroundColor: theme === 'dark' ? '#1a1a1a' : '#ffffff',
+  textColor: theme === 'dark' ? '#ffffff' : '#0f172a',
+  gridColor: theme === 'dark' ? '#333333' : '#e2e8f0',
+  tooltipBg: theme === 'dark' ? '#262626' : '#ffffff',
+  tooltipBorder: theme === 'dark' ? '#404040' : '#e2e8f0',
+  tooltip: {
+    contentStyle: {
+      backgroundColor: theme === 'dark' ? '#262626' : '#ffffff',
+      border: `1px solid ${theme === 'dark' ? '#404040' : '#e2e8f0'}`,
+      borderRadius: '8px',
+      color: theme === 'dark' ? '#ffffff' : '#0f172a'
+    }
+  }
+});
 
 interface AvailableFiltersType {
   categories: string[];
@@ -94,6 +147,8 @@ interface AvailableFiltersType {
 
 const ReportsEnhanced: React.FC = () => {
   const { formatCurrency } = useCurrency();
+  const { theme } = useTheme();
+  const chartConfig = getChartConfig(theme);
   const [selectedReportType, setSelectedReportType] = useState('inventory');
   
   const [dateRange, setDateRange] = useState(() => {
@@ -288,6 +343,7 @@ const ReportsEnhanced: React.FC = () => {
 
     // Helpers derived from products
     const getInventoryDatasets = () => {
+      const chartColors = getChartColors(theme);
       const categoryMap: Record<string, number> = {};
       productDetails.forEach(p => {
         const key = p.category || 'Uncategorized';
@@ -296,7 +352,7 @@ const ReportsEnhanced: React.FC = () => {
       const categories = Object.entries(categoryMap).map(([name, value], i) => ({
         name,
         value,
-        color: CHART_COLORS[i % CHART_COLORS.length]
+        color: chartColors[i % chartColors.length]
       }));
 
       const topProducts = [...productDetails]
@@ -377,7 +433,7 @@ const ReportsEnhanced: React.FC = () => {
     );
 
     const grid = (children: React.ReactNode) => (
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px' }}>{children}</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px' }}>{children}</div>
     );
 
     // Render for a single selected type
@@ -391,39 +447,100 @@ const ReportsEnhanced: React.FC = () => {
           'Inventory Analytics — Analytics',
           grid(
             <>
-              <div>
+              <div className="chart-container">
                 <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📊 Category Distribution</h4>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie data={categories} cx="50%" cy="50%" labelLine={false} label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`} outerRadius={100} dataKey="value">
-                      {categories.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.color} />))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={categories}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis 
+                      dataKey="name" 
+                      stroke={chartConfig.textColor} 
+                      fontSize={12} 
+                      interval={0} 
+                      angle={-45} 
+                      textAnchor="end" 
+                      height={80}
+                    />
+                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip {...chartConfig.tooltip} />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="rect"
+                      formatter={(value: string) => `${value} (High Volume: Green, Medium: Orange, Low: Red)`}
+                    />
+                    <Bar 
+                      dataKey="value" 
+                      name="Product Count"
+                      radius={[6,6,0,0]}
+                      strokeWidth={1}
+                    >
+                      {categories.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={getChartColors(theme)[index % getChartColors(theme).length]}
+                          stroke={getChartColors(theme)[index % getChartColors(theme).length]}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div>
+              <div className="chart-container">
                 <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📦 Stock by Category</h4>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={400}>
                   <BarChart data={categories}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} interval={0} angle={-10} dy={10} />
-                    <YAxis stroke="var(--text-muted)" fontSize={12} />
-                    <Tooltip />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis dataKey="name" stroke={chartConfig.textColor} fontSize={12} interval={0} angle={-10} dy={10} />
+                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip {...chartConfig.tooltip} />
                     <Bar dataKey="value" fill="var(--primary)" radius={[4,4,0,0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
-              <div>
+              <div className="chart-container">
                 <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>🏆 Top Products by Value</h4>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={series}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="name" stroke="var(--text-muted)" fontSize={12} />
-                    <YAxis stroke="var(--text-muted)" fontSize={12} />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="value" stroke="var(--success)" fill="var(--success)" fillOpacity={0.25} strokeWidth={2} />
-                  </AreaChart>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={series}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis 
+                      dataKey="name" 
+                      stroke={chartConfig.textColor} 
+                      fontSize={12} 
+                      interval={0} 
+                      angle={-45} 
+                      textAnchor="end" 
+                      height={80}
+                    />
+                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip {...chartConfig.tooltip} />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="rect"
+                    />
+                    <Bar 
+                      dataKey="value" 
+                      name="Product Value (₹)"
+                      radius={[6,6,0,0]}
+                      strokeWidth={1}
+                    >
+                      {series.map((entry, index) => {
+                        // Color coding based on value performance
+                        let color = COLOR_SCHEME.neutral;
+                        if (index === 0) color = COLOR_SCHEME.success;      // Top performer - Green
+                        else if (index === 1) color = COLOR_SCHEME.primary; // Second - Blue  
+                        else if (index === 2) color = COLOR_SCHEME.info;    // Third - Cyan
+                        else if (index >= series.length - 2) color = COLOR_SCHEME.warning; // Low performers - Orange
+                        
+                        return (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={color}
+                            stroke={color}
+                          />
+                        );
+                      })}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </>
@@ -445,46 +562,156 @@ const ReportsEnhanced: React.FC = () => {
               <div>
                 <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📈 Monthly Sales vs Target</h4>
                 <ResponsiveContainer width="100%" height={300}>
-                  <ComposedChart data={monthlySales}>
+                  <BarChart data={monthlySales}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="month" stroke="var(--text-muted)" />
-                    <YAxis stroke="var(--text-muted)" />
+                    <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={12} />
+                    <YAxis stroke="var(--text-muted)" fontSize={12} />
                     <Tooltip />
-                    <Bar dataKey="sales" fill="var(--primary)" radius={[4,4,0,0]} />
-                    <Line type="monotone" dataKey="target" stroke="var(--warning)" strokeWidth={2} />
-                  </ComposedChart>
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="rect"
+                      formatter={(value: string) => 
+                        value.includes('Actual') ? `${value} (Green: Sales Revenue)` :
+                        value.includes('Target') ? `${value} (Orange: Target Goals)` : value
+                      }
+                    />
+                    <Bar 
+                      dataKey="sales" 
+                      fill={COLOR_SCHEME.success}
+                      name="Actual Sales (₹)"
+                      radius={[4,4,0,0]}
+                      stroke={COLOR_SCHEME.success}
+                      strokeWidth={1}
+                    />
+                    <Bar 
+                      dataKey="target" 
+                      fill={COLOR_SCHEME.warning}
+                      name="Sales Target (₹)"
+                      radius={[4,4,0,0]}
+                      stroke={COLOR_SCHEME.warning}
+                      strokeWidth={1}
+                    />
+                  </BarChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
                   Summary: Total Sales (6 mo) Rs. {totalSales.toLocaleString('en-IN')} · Avg per month Rs. {(Math.round(totalSales/Math.max(1,monthlySales.length))).toLocaleString('en-IN')}
+                  <br />
+                  <span style={{ color: COLOR_SCHEME.success }}>● Actual Sales</span> vs <span style={{ color: COLOR_SCHEME.warning }}>● Target</span>
                 </div>
               </div>
-              <div>
+              <div className="chart-container">
                 <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>🏅 Product Performance</h4>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={400}>
                   <BarChart data={productPerformance}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="name" stroke="var(--text-muted)" />
-                    <YAxis stroke="var(--text-muted)" />
-                    <Tooltip />
-                    <Bar dataKey="sales" fill="var(--success)" />
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis 
+                      dataKey="name" 
+                      stroke={chartConfig.textColor} 
+                      fontSize={12}
+                      interval={0} 
+                      angle={-45} 
+                      textAnchor="end" 
+                      height={80}
+                    />
+                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip {...chartConfig.tooltip} />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="rect"
+                    />
+                    <Bar 
+                      dataKey="sales" 
+                      name="Sales Performance (₹)"
+                      radius={[6,6,0,0]}
+                      strokeWidth={1}
+                    >
+                      {productPerformance.map((entry, index) => {
+                        // Performance-based color coding
+                        let color = COLOR_SCHEME.neutral;
+                        const maxSales = Math.max(...productPerformance.map(p => p.sales));
+                        const performance = entry.sales / maxSales;
+                        
+                        if (performance > 0.8) color = COLOR_SCHEME.success;        // Excellent - Green
+                        else if (performance > 0.6) color = COLOR_SCHEME.primary;  // Good - Blue
+                        else if (performance > 0.4) color = COLOR_SCHEME.info;     // Average - Cyan
+                        else if (performance > 0.2) color = COLOR_SCHEME.warning; // Below Average - Orange
+                        else color = COLOR_SCHEME.danger;                         // Poor - Red
+                        
+                        return (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={color}
+                            stroke={color}
+                          />
+                        );
+                      })}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
                   Summary: Top product by revenue — {productPerformance[0]?.name || 'N/A'}
+                  <br />
+                  <span style={{ color: COLOR_SCHEME.success }}>● Excellent (80%+)</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Good (60%+)</span> 
+                  <span style={{ color: COLOR_SCHEME.info }}> ● Average (40%+)</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Below Avg (20%+)</span> 
+                  <span style={{ color: COLOR_SCHEME.danger }}> ● Poor (&lt;20%)</span>
                 </div>
               </div>
-              <div>
+              <div className="chart-container">
                 <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>👥 Customer Segments</h4>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie data={customerSegments} dataKey="revenue" nameKey="segment" cx="50%" cy="50%" outerRadius={100} label={renderPieLabel}>
-                      {customerSegments.map((s, idx)=> <Cell key={s.segment} fill={CHART_COLORS[idx%CHART_COLORS.length]} />)}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={customerSegments}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis 
+                      dataKey="segment" 
+                      stroke={chartConfig.textColor} 
+                      fontSize={12}
+                      interval={0} 
+                      angle={-45} 
+                      textAnchor="end" 
+                      height={80}
+                    />
+                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip {...chartConfig.tooltip} />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="rect"
+                      formatter={(value: string) => `${value} (Premium: Green, Regular: Blue, Budget: Orange)`}
+                    />
+                    <Bar 
+                      dataKey="revenue" 
+                      name="Segment Revenue (₹)"
+                      radius={[6,6,0,0]}
+                      strokeWidth={1}
+                    >
+                      {customerSegments.map((entry, index) => {
+                        // Segment-based color coding
+                        const colors = [
+                          COLOR_SCHEME.success,   // Premium customers - Green
+                          COLOR_SCHEME.primary,   // Regular customers - Blue  
+                          COLOR_SCHEME.info,      // New customers - Cyan
+                          COLOR_SCHEME.warning,   // Occasional customers - Orange
+                          COLOR_SCHEME.secondary  // Other segments - Purple
+                        ];
+                        return (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={colors[index % colors.length]}
+                            stroke={colors[index % colors.length]}
+                          />
+                        );
+                      })}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
                   Summary: Top segment — {topSegment?.segment} (Rs. {topSegment?.revenue.toLocaleString('en-IN')})
+                  <br />
+                  Customer Types: <span style={{ color: COLOR_SCHEME.success }}>● Premium</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Regular</span> 
+                  <span style={{ color: COLOR_SCHEME.info }}> ● New</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Occasional</span>
                 </div>
               </div>
             </>
@@ -504,50 +731,147 @@ const ReportsEnhanced: React.FC = () => {
           'Financial Overview — Analytics',
           grid(
             <>
-              <div>
+              <div className="chart-container">
                 <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>💵 Revenue vs Expenses</h4>
-                <ResponsiveContainer width="100%" height={300}>
-                  <ComposedChart data={monthly}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="month" stroke="var(--text-muted)" />
-                    <YAxis stroke="var(--text-muted)" />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="revenue" stroke="var(--primary)" fill="var(--primary)" fillOpacity={0.2} />
-                    <Area type="monotone" dataKey="expenses" stroke="var(--danger)" fill="var(--danger)" fillOpacity={0.15} />
-                    <Line type="monotone" dataKey="profit" stroke="var(--success)" strokeWidth={2} />
-                  </ComposedChart>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={monthly}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis dataKey="month" stroke={chartConfig.textColor} fontSize={12} />
+                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip {...chartConfig.tooltip} />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="rect"
+                      formatter={(value: string) => 
+                        value.includes('Revenue') ? `${value} (Green: Income)` :
+                        value.includes('Expenses') ? `${value} (Red: Costs)` : value
+                      }
+                    />
+                    <Bar 
+                      dataKey="revenue" 
+                      fill={COLOR_SCHEME.success}
+                      name="Revenue (₹)"
+                      radius={[4,4,0,0]}
+                      stroke={COLOR_SCHEME.success}
+                      strokeWidth={1}
+                    />
+                    <Bar 
+                      dataKey="expenses" 
+                      fill={COLOR_SCHEME.danger}
+                      name="Expenses (₹)"
+                      radius={[4,4,0,0]}
+                      stroke={COLOR_SCHEME.danger}
+                      strokeWidth={1}
+                    />
+                  </BarChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
                   Summary: Total Revenue Rs. {totalRev.toLocaleString('en-IN')} · Total Expenses Rs. {totalExp.toLocaleString('en-IN')} · Net Rs. {(totalRev-totalExp).toLocaleString('en-IN')}
+                  <br />
+                  <span style={{ color: COLOR_SCHEME.success }}>● Revenue (Income)</span> vs <span style={{ color: COLOR_SCHEME.danger }}>● Expenses (Outgoing)</span>
                 </div>
               </div>
-              <div>
+              <div className="chart-container">
                 <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>🧾 Expense Categories</h4>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie data={expenseCategories} dataKey="amount" nameKey="category" cx="50%" cy="50%" outerRadius={100} label={renderPieLabel}>
-                      {expenseCategories.map((e, idx)=>(<Cell key={e.category} fill={CHART_COLORS[idx%CHART_COLORS.length]} />))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={expenseCategories}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis 
+                      dataKey="category" 
+                      stroke={chartConfig.textColor} 
+                      fontSize={12}
+                      interval={0} 
+                      angle={-45} 
+                      textAnchor="end" 
+                      height={80}
+                    />
+                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip {...chartConfig.tooltip} />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="rect"
+                      formatter={(value: string) => `${value} (High Priority: Red, Medium: Orange, Low: Green)`}
+                    />
+                    <Bar 
+                      dataKey="amount" 
+                      name="Expense Amount (₹)"
+                      radius={[6,6,0,0]}
+                      strokeWidth={1}
+                    >
+                      {expenseCategories.map((entry, index) => {
+                        // Expense category color coding
+                        const expenseColors = [
+                          COLOR_SCHEME.danger,    // High expenses - Red
+                          COLOR_SCHEME.warning,   // Medium expenses - Orange  
+                          COLOR_SCHEME.info,      // Regular expenses - Cyan
+                          COLOR_SCHEME.primary,   // Operational expenses - Blue
+                          COLOR_SCHEME.secondary, // Other expenses - Purple
+                          COLOR_SCHEME.neutral    // Miscellaneous - Gray
+                        ];
+                        return (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={expenseColors[index % expenseColors.length]}
+                            stroke={expenseColors[index % expenseColors.length]}
+                          />
+                        );
+                      })}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
                   Summary: Top expense — {topExpense?.category} (Rs. {topExpense?.amount.toLocaleString('en-IN')})
+                  <br />
+                  Categories: <span style={{ color: COLOR_SCHEME.danger }}>● High Priority</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Medium</span> 
+                  <span style={{ color: COLOR_SCHEME.info }}> ● Regular</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Operational</span>
                 </div>
               </div>
-              <div>
+              <div className="chart-container">
                 <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>💧 Cash Flow (Net)</h4>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={cashFlow}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="month" stroke="var(--text-muted)" />
-                    <YAxis stroke="var(--text-muted)" />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="net" stroke="var(--info)" fill="var(--info)" fillOpacity={0.2} />
-                  </AreaChart>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={cashFlow}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis dataKey="month" stroke={chartConfig.textColor} fontSize={12} />
+                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip {...chartConfig.tooltip} />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="rect"
+                      formatter={(value: string) => `${value} (Positive: Green, Negative: Red)`}
+                    />
+                    <Bar 
+                      dataKey="net" 
+                      name="Net Cash Flow (₹)"
+                      radius={[6,6,0,0]}
+                      strokeWidth={1}
+                    >
+                      {cashFlow.map((entry, index) => {
+                        // Cash flow color coding based on positive/negative
+                        let color = COLOR_SCHEME.neutral;
+                        if (entry.net > 0) {
+                          color = entry.net > 50000 ? COLOR_SCHEME.success : COLOR_SCHEME.primary; // Positive flow
+                        } else {
+                          color = COLOR_SCHEME.danger; // Negative flow
+                        }
+                        return (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={color}
+                            stroke={color}
+                          />
+                        );
+                      })}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
                   Summary: Best month — {cashFlow.reduce((a,b)=> a.net>b.net?a:b, cashFlow[0])?.month}
+                  <br />
+                  Flow Status: <span style={{ color: COLOR_SCHEME.success }}>● Strong Positive</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Positive</span> 
+                  <span style={{ color: COLOR_SCHEME.danger }}> ● Negative</span>
                 </div>
               </div>
             </>
@@ -565,46 +889,153 @@ const ReportsEnhanced: React.FC = () => {
           'Tax & Compliance — Analytics',
           grid(
             <>
-              <div>
+              <div className="chart-container">
                 <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📅 Monthly GST Trend</h4>
-                <ResponsiveContainer width="100%" height={300}>
-                  <ComposedChart data={monthlyGST}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="month" stroke="var(--text-muted)" />
-                    <YAxis stroke="var(--text-muted)" />
-                    <Tooltip />
-                    <Bar dataKey="collected" fill="var(--primary)" />
-                    <Line type="monotone" dataKey="liability" stroke="var(--danger)" />
-                  </ComposedChart>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={monthlyGST}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis dataKey="month" stroke={chartConfig.textColor} fontSize={12} />
+                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip {...chartConfig.tooltip} />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="rect"
+                      formatter={(value: string) => 
+                        value.includes('Collected') ? `${value} (Green: Tax Revenue)` :
+                        value.includes('Paid') ? `${value} (Blue: Tax Payments)` : value
+                      }
+                    />
+                    <Bar 
+                      dataKey="collected" 
+                      fill={COLOR_SCHEME.success}
+                      name="GST Collected (₹)"
+                      radius={[4,4,0,0]}
+                      stroke={COLOR_SCHEME.success}
+                      strokeWidth={1}
+                    />
+                    <Bar 
+                      dataKey="liability" 
+                      fill={COLOR_SCHEME.warning}
+                      name="GST Liability (₹)"
+                      radius={[4,4,0,0]}
+                      stroke={COLOR_SCHEME.warning}
+                      strokeWidth={1}
+                    />
+                  </BarChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
                   Summary: GST Collected (6 mo) Rs. {totalCollected.toLocaleString('en-IN')}
+                  <br />
+                  <span style={{ color: COLOR_SCHEME.success }}>● GST Collected</span> vs <span style={{ color: COLOR_SCHEME.warning }}>● GST Liability</span>
                 </div>
               </div>
-              <div>
+              <div className="chart-container">
                 <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📊 GST Rate Distribution</h4>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie data={rateDistribution} dataKey="amount" nameKey="rate" cx="50%" cy="50%" outerRadius={100} label={renderPieLabel}>
-                      {rateDistribution.map((r, idx)=>(<Cell key={r.rate} fill={CHART_COLORS[idx%CHART_COLORS.length]} />))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
+                <ResponsiveContainer width="100%" height={400}>
+                  <BarChart data={rateDistribution}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis 
+                      dataKey="rate" 
+                      stroke={chartConfig.textColor} 
+                      fontSize={12}
+                    />
+                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip {...chartConfig.tooltip} />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="rect"
+                      formatter={(value: string) => `${value} (0%: Green, 5%: Blue, 12%: Cyan, 18%: Orange, 28%: Red)`}
+                    />
+                    <Bar 
+                      dataKey="amount" 
+                      name="Tax Amount by Rate (₹)"
+                      radius={[6,6,0,0]}
+                      strokeWidth={1}
+                    >
+                      {rateDistribution.map((entry, index) => {
+                        // GST rate color coding
+                        const rate = parseFloat(entry.rate.replace('%', ''));
+                        let color = COLOR_SCHEME.neutral;
+                        if (rate === 0) color = COLOR_SCHEME.success;      // 0% - Green (Exempt)
+                        else if (rate <= 5) color = COLOR_SCHEME.primary;  // 5% - Blue (Low rate)
+                        else if (rate <= 12) color = COLOR_SCHEME.info;    // 12% - Cyan (Medium rate)  
+                        else if (rate <= 18) color = COLOR_SCHEME.warning; // 18% - Orange (High rate)
+                        else color = COLOR_SCHEME.danger;                  // 28% - Red (Highest rate)
+                        
+                        return (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={color}
+                            stroke={color}
+                          />
+                        );
+                      })}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  GST Rates: <span style={{ color: COLOR_SCHEME.success }}>● 0% (Exempt)</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● 5% (Low)</span> 
+                  <span style={{ color: COLOR_SCHEME.info }}> ● 12% (Medium)</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● 18% (High)</span> 
+                  <span style={{ color: COLOR_SCHEME.danger }}> ● 28% (Highest)</span>
+                </div>
               </div>
               <div>
                 <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>✅ Compliance Metrics</h4>
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={compliance}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="metric" stroke="var(--text-muted)" />
-                    <YAxis stroke="var(--text-muted)" />
+                    <XAxis 
+                      dataKey="metric" 
+                      stroke="var(--text-muted)" 
+                      fontSize={12}
+                      interval={0} 
+                      angle={-30} 
+                      textAnchor="end" 
+                      height={60}
+                    />
+                    <YAxis stroke="var(--text-muted)" fontSize={12} />
                     <Tooltip />
-                    <Bar dataKey="score" fill="var(--success)" />
+                    <Legend 
+                      wrapperStyle={{ paddingTop: '20px' }}
+                      iconType="rect"
+                      formatter={(value: string) => `${value} (Excellent: Green, Good: Blue, Average: Orange, Poor: Red)`}
+                    />
+                    <Bar 
+                      dataKey="score" 
+                      name="Compliance Score (%)"
+                      radius={[6,6,0,0]}
+                      strokeWidth={1}
+                    >
+                      {compliance.map((entry, index) => {
+                        // Compliance score color coding
+                        let color = COLOR_SCHEME.neutral;
+                        if (entry.score >= 90) color = COLOR_SCHEME.success;      // Excellent - Green
+                        else if (entry.score >= 75) color = COLOR_SCHEME.primary; // Good - Blue
+                        else if (entry.score >= 60) color = COLOR_SCHEME.info;    // Satisfactory - Cyan
+                        else if (entry.score >= 40) color = COLOR_SCHEME.warning; // Needs Improvement - Orange  
+                        else color = COLOR_SCHEME.danger;                         // Critical - Red
+                        
+                        return (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={color}
+                            stroke={color}
+                          />
+                        );
+                      })}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
                   Summary: Average compliance score {Math.round(compliance.reduce((s,c)=> s+c.score,0)/Math.max(1,compliance.length))}%
+                  <br />
+                  Compliance Levels: <span style={{ color: COLOR_SCHEME.success }}>● Excellent (90%+)</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Good (75%+)</span> 
+                  <span style={{ color: COLOR_SCHEME.info }}> ● Satisfactory (60%+)</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Needs Improvement (40%+)</span> 
+                  <span style={{ color: COLOR_SCHEME.danger }}> ● Critical (&lt;40%)</span>
                 </div>
               </div>
             </>
@@ -654,14 +1085,16 @@ const ReportsEnhanced: React.FC = () => {
               <button
                 key={type.id}
                 onClick={() => setSelectedReportType(type.id)}
+                className={`report-tab ${selectedReportType === type.id ? 'active' : ''}`}
                 style={{
                   textAlign: 'left',
                   padding: '16px',
                   borderRadius: '12px',
                   border: selectedReportType === type.id ? '2px solid var(--primary)' : '1px solid var(--border)',
-                  background: 'var(--surface)',
+                  background: selectedReportType === type.id ? 'var(--primary-light)' : 'var(--surface)',
                   color: 'var(--text)',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease'
                 }}
               >
                 <div style={{ fontSize: '20px', marginBottom: '8px' }}>{type.icon}</div>

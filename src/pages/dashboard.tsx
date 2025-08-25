@@ -3,7 +3,7 @@ import { dashboardAPI, productsAPI } from '../services/api';
 import { DashboardStats, Product, SalesTrendData, ChartData } from '../types';
 import { formatIndianNumber, getStockStatus, formatDate } from '../utils/helpers';
 import { useCurrency } from '../contexts/CurrencyContext';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
 interface DashboardProps {
   onNavigate: (page: 'products' | 'inventory' | 'reports' | 'settings' | 'users') => void;
@@ -18,6 +18,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddProduct }) => {
   const [categoryData, setCategoryData] = useState<ChartData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Meaningful color scheme for different data types
+  const COLOR_SCHEME = {
+    success: '#10b981',      // Green - Good performance, high values
+    warning: '#f59e0b',      // Orange - Medium performance, caution
+    danger: '#ef4444',       // Red - Low performance, urgent attention
+    primary: '#667eea',      // Blue - Primary data, revenue
+    secondary: '#764ba2',    // Purple - Secondary data, targets
+    info: '#06b6d4',         // Cyan - Information, neutral data
+    neutral: '#6b7280'       // Gray - Baseline, average
+  };
 
   // Enhanced color palette for better visual hierarchy
   const COLORS = [
@@ -162,22 +173,36 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddProduct }) => {
           Sales Trend (6 Months)
         </h2>
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={salesData}>
+          <BarChart data={salesData}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-            <XAxis dataKey="month" stroke="var(--text-muted)" />
-            <YAxis tickFormatter={(value) => formatIndianNumber(value)} stroke="var(--text-muted)" />
+            <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={12} />
+            <YAxis tickFormatter={(value) => formatIndianNumber(value)} stroke="var(--text-muted)" fontSize={12} />
             <Tooltip 
               formatter={(value: number) => [formatCurrency(value), 'Sales']}
               labelStyle={{ color: 'var(--text)' }}
             />
-            <Line 
-              type="monotone" 
-              dataKey="sales" 
-              stroke="var(--primary)" 
-              strokeWidth={3}
-              dot={{ fill: 'var(--primary)', strokeWidth: 2, r: 6 }}
+            <Legend
+              iconType="rect"
+              formatter={() => 'Sales Performance (High: Green, Average: Orange, Low: Red)'}
             />
-          </LineChart>
+            <Bar 
+              dataKey="sales" 
+              radius={[6,6,0,0]}
+              stroke="#5a67d8"
+              strokeWidth={1}
+            >
+              {salesData.map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={
+                    entry.sales > 50000 ? COLOR_SCHEME.success :  // High sales
+                    entry.sales > 25000 ? COLOR_SCHEME.warning :  // Medium sales
+                    COLOR_SCHEME.danger                           // Low sales
+                  }
+                />
+              ))}
+            </Bar>
+          </BarChart>
         </ResponsiveContainer>
       </div>
 
@@ -187,73 +212,41 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddProduct }) => {
           📊 Category Distribution
         </h2>
         <ResponsiveContainer width="100%" height={600}>
-          <PieChart>
-            <Pie
-              data={categoryData}
-              cx="50%"
-              cy="45%"
-              labelLine={false}
-              label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                if (typeof midAngle !== 'number' || typeof percent !== 'number') return null;
-                if (percent < 0.05) return null; // Only show labels for slices > 5%
-                const RADIAN = Math.PI / 180;
-                const radius = innerRadius + (outerRadius - innerRadius) * 0.5; // Position closer to center
-                const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                
-                return (
-                  <g>
-                    {/* Semi-transparent background for better readability */}
-                    <rect
-                      x={x - 25}
-                      y={y - 12}
-                      width={50}
-                      height={24}
-                      fill="rgba(0,0,0,0.7)"
-                      rx={4}
-                    />
-                    <text
-                      x={x}
-                      y={y}
-                      fill="#ffffff"
-                      textAnchor="middle"
-                      dominantBaseline="central"
-                      fontSize={16}
-                      fontWeight="bold"
-                      style={{ 
-                        pointerEvents: 'none'
-                      }}
-                    >
-                      {`${(percent * 100).toFixed(1)}%`}
-                    </text>
-                  </g>
-                );
-              }}
-              outerRadius={200}
-              innerRadius={80}
-              fill="#8884d8"
-              dataKey="value"
-              strokeWidth={4}
-              stroke="var(--surface)"
-              isAnimationActive={false}
+          <BarChart data={categoryData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+            <XAxis 
+              dataKey="name" 
+              stroke="var(--text-muted)" 
+              fontSize={12}
+              interval={0} 
+              angle={-45} 
+              textAnchor="end" 
+              height={100}
+            />
+            <YAxis stroke="var(--text-muted)" fontSize={12} />
+            <Tooltip formatter={(value: number, name: string) => [`${value} items`, name]} />
+            <Legend
+              iconType="rect"
+              formatter={() => 'Category Performance (High: Green, Medium: Orange, Low: Red)'}
+            />
+            <Bar 
+              dataKey="value" 
+              radius={[6,6,0,0]}
+              stroke="#1d4ed8"
+              strokeWidth={1}
             >
               {categoryData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={
+                    entry.value > 15 ? COLOR_SCHEME.success :  // High category count
+                    entry.value > 5 ? COLOR_SCHEME.warning :   // Medium category count
+                    COLOR_SCHEME.danger                        // Low category count
+                  }
+                />
               ))}
-            </Pie>
-            <Tooltip formatter={(value: number, name: string) => [`${value} items`, name]} />
-            <Legend 
-              wrapperStyle={{
-                fontSize: '16px',
-                fontWeight: 'bold',
-                color: 'var(--text)',
-                paddingTop: '30px'
-              }}
-              layout="horizontal"
-              align="center"
-              verticalAlign="bottom"
-            />
-          </PieChart>
+            </Bar>
+          </BarChart>
         </ResponsiveContainer>
       </div>
 

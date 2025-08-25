@@ -3,10 +3,11 @@ import { motion } from 'framer-motion';
 import { authAPI } from './services/api';
 import { User } from './types';
 import { CurrencyProvider } from './contexts/CurrencyContext';
-import { ThemeProvider } from './contexts/ThemeContext';
+import { ThemeProvider } from './contexts/ThemeContextNew';
 import { notificationManager } from './services/notificationManager';
 import { isFirebaseEnabled } from './services/firebase';
 import { migrateLocalProductsToFirestore } from './services/migration';
+import { initializeMockData } from './services/mockDataInitializer';
 import { Layout } from './components/ui/Layout';
 import { LoadingPage } from './components/ui/Loading';
 import './styles/globals.css';
@@ -41,11 +42,25 @@ const App: React.FC = () => {
   // Initialize dynamic features when user logs in
   useEffect(() => {
     if (user) {
+      // Initialize mock data for demonstration
+      const initData = async () => {
+        try {
+          await initializeMockData();
+          notificationManager.showSuccess(
+            '🎭 Demo Data Ready!',
+            'Comprehensive product catalog loaded for demonstration'
+          );
+        } catch (error) {
+          console.error('Failed to initialize mock data:', error);
+        }
+      };
+
       setTimeout(() => {
         notificationManager.showInfo(
           '🚀 Welcome to SmartStock!',
           'Your modern inventory management system is ready to use.'
         );
+        initData();
       }, 1000);
 
       // Migrate local data to Firestore if available

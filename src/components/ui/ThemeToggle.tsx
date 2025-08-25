@@ -1,56 +1,79 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Sun, Moon, Monitor } from 'lucide-react';
-import { useTheme, type ThemePreference } from '../../contexts/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
+import { useTheme } from '../../contexts/ThemeContextNew';
 
 interface ThemeToggleProps {
   className?: string;
 }
 
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '' }) => {
-  const { preference, setPreference } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
-  const themes: { key: ThemePreference; icon: React.ReactNode; label: string }[] = [
-    { key: 'light', icon: <Sun size={16} />, label: 'Light' },
-    { key: 'dark', icon: <Moon size={16} />, label: 'Dark' },
-    { key: 'system', icon: <Monitor size={16} />, label: 'System' },
-  ];
+  const isDark = theme === 'dark';
 
   return (
-    <div className={`relative inline-flex bg-secondary/20 rounded-full p-1 ${className}`}>
+    <motion.button
+      onClick={toggleTheme}
+      className={`
+        relative p-2.5 rounded-xl overflow-hidden
+        transition-all duration-300
+        ${isDark 
+          ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30' 
+          : 'bg-slate-500/20 text-slate-600 hover:bg-slate-500/30'
+        }
+        ${className}
+      `}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+    >
+      {/* Background glow effect */}
       <motion.div
-        className="absolute inset-y-1 w-8 bg-primary/20 rounded-full"
-        layoutId="theme-toggle-bg"
-        initial={false}
-        animate={{
-          x: themes.findIndex(t => t.key === preference) * 36,
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className={`absolute inset-0 rounded-xl ${
+          isDark 
+            ? 'bg-gradient-to-r from-yellow-400/20 to-orange-400/20' 
+            : 'bg-gradient-to-r from-slate-400/20 to-slate-600/20'
+        }`}
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
       />
-      {themes.map(({ key, icon, label }) => (
-        <motion.button
-          key={key}
-          onClick={() => setPreference(key)}
-          className={`
-            relative z-10 p-2 rounded-full transition-colors duration-200
-            ${preference === key 
-              ? 'text-primary' 
-              : 'text-muted hover:text-foreground'
-            }
-          `}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-          title={label}
-        >
-          <motion.div
-            initial={false}
-            animate={{ rotate: preference === key ? 360 : 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            {icon}
-          </motion.div>
-        </motion.button>
-      ))}
-    </div>
+      
+      {/* Icon container */}
+      <motion.div
+        className="relative z-10"
+        initial={false}
+        animate={{ 
+          rotate: isDark ? 180 : 0,
+          scale: [1, 1.2, 1]
+        }}
+        transition={{ 
+          rotate: { duration: 0.5, ease: 'easeInOut' },
+          scale: { duration: 0.3, times: [0, 0.5, 1] }
+        }}
+      >
+        {isDark ? (
+          <Sun size={18} className="drop-shadow-sm" />
+        ) : (
+          <Moon size={18} className="drop-shadow-sm" />
+        )}
+      </motion.div>
+
+      {/* Sparkle animation for theme switch */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: [0, 1, 0] }}
+        transition={{ duration: 0.6, repeat: Infinity, repeatDelay: 3 }}
+      >
+        <div className={`absolute top-1 right-1 w-1 h-1 rounded-full ${
+          isDark ? 'bg-yellow-300' : 'bg-slate-400'
+        }`} />
+        <div className={`absolute bottom-1 left-1 w-0.5 h-0.5 rounded-full ${
+          isDark ? 'bg-yellow-400' : 'bg-slate-500'
+        }`} />
+      </motion.div>
+    </motion.button>
   );
 };

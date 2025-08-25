@@ -4,7 +4,7 @@ import clsx from 'clsx';
 
 interface CardProps extends HTMLMotionProps<"div"> {
   variant?: 'default' | 'elevated' | 'glass' | 'gradient';
-  padding?: 'none' | 'sm' | 'md' | 'lg';
+  padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
   hover?: boolean;
   glow?: boolean;
   children: React.ReactNode;
@@ -33,6 +33,7 @@ export const Card: React.FC<CardProps> = ({
       'p-4': padding === 'sm',
       'p-6': padding === 'md',
       'p-8': padding === 'lg',
+      'p-12': padding === 'xl',
       
       // Hover effects
       'hover:shadow-soft-lg hover:-translate-y-1 cursor-pointer': hover,

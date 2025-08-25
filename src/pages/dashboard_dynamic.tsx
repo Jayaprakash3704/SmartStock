@@ -20,6 +20,17 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import { useDashboard, useNotifications, usePerformanceMonitor } from '../hooks/useDashboard';
 import { formatIndianNumber } from '../utils/helpers';
 
+// Meaningful color scheme for different data types
+const COLOR_SCHEME = {
+  success: '#10b981',      // Green - Good performance, high values
+  warning: '#f59e0b',      // Orange - Medium performance, caution
+  danger: '#ef4444',       // Red - Low performance, urgent attention
+  primary: '#667eea',      // Blue - Primary data, revenue
+  secondary: '#764ba2',    // Purple - Secondary data, targets
+  info: '#06b6d4',         // Cyan - Information, neutral data
+  neutral: '#6b7280'       // Gray - Baseline, average
+};
+
 const Dashboard: React.FC = () => {
   const { formatCurrency } = useCurrency();
   const { 
@@ -90,60 +101,114 @@ const Dashboard: React.FC = () => {
   <div className="page-container" style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <style>
         {`
-          /* Refresh button styles to match provided design */
+          /* Enhanced Colorful Refresh button styles */
           .refresh-btn {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding: 10px 18px;
-            height: 44px;
-            border-radius: 12px;
+            gap: 12px;
+            padding: 12px 20px;
+            height: 48px;
+            border-radius: 16px;
             border: none;
             cursor: pointer;
             color: #fff;
-            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-600) 100%);
-            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.45);
+            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 25%, #45b7d1 50%, #96ceb4 75%, #ffeaa7 100%);
+            background-size: 400% 400%;
+            animation: rainbowFlow 3s ease-in-out infinite;
+            box-shadow: 0 8px 32px rgba(255, 107, 107, 0.4), 0 4px 16px rgba(78, 205, 196, 0.3);
             font-size: 14px;
             font-weight: 800;
-            letter-spacing: 0.6px;
+            letter-spacing: 0.8px;
             text-transform: uppercase;
-            transition: transform 120ms ease, box-shadow 150ms ease, filter 150ms ease, opacity 120ms ease;
+            transition: all 200ms ease;
+            position: relative;
+            overflow: hidden;
           }
+          
+          .refresh-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+          }
+          
+          .refresh-btn:hover::before {
+            left: 100%;
+          }
+          
           .refresh-btn:hover:not(:disabled) {
-            transform: translateY(-1px);
-            filter: brightness(1.05);
-            box-shadow: 0 12px 32px rgba(59, 130, 246, 0.55);
+            transform: translateY(-3px) scale(1.05);
+            filter: brightness(1.15) saturate(1.2);
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.5), 0 8px 24px rgba(78, 205, 196, 0.4);
+            animation-duration: 1.5s;
           }
+          
           .refresh-btn:active:not(:disabled) {
-            transform: translateY(0);
-            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.45);
+            transform: translateY(-1px) scale(1.02);
+            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.6);
           }
+          
           .refresh-btn:disabled {
-            opacity: 0.9;
+            opacity: 0.7;
             cursor: not-allowed;
+            animation: none;
           }
+          
           .refresh-btn__iconbox {
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(180deg, var(--primary) 0%, var(--primary-600) 100%);
-            box-shadow: inset 0 1px 2px rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.15);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.3), 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 200ms ease;
           }
+          
+          .refresh-btn:hover .refresh-btn__iconbox {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            transform: rotate(10deg) scale(1.1);
+          }
+          
           .refresh-btn__svg {
-            width: 14px;
-            height: 14px;
+            width: 16px;
+            height: 16px;
             stroke: #fff;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
           }
+          
           .refresh-btn.is-loading .refresh-btn__svg {
-            animation: spin 1s linear infinite;
+            animation: colorfulSpin 1.2s linear infinite;
             transform-origin: 50% 50%;
           }
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+          
+          .refresh-btn.is-loading .refresh-btn__iconbox {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            animation: pulse 0.8s ease-in-out infinite alternate;
+          }
+          
+          @keyframes rainbowFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+          }
+          
+          @keyframes colorfulSpin {
+            0% { transform: rotate(0deg); filter: hue-rotate(0deg); }
+            25% { filter: hue-rotate(90deg); }
+            50% { transform: rotate(180deg); filter: hue-rotate(180deg); }
+            75% { filter: hue-rotate(270deg); }
+            100% { transform: rotate(360deg); filter: hue-rotate(360deg); }
+          }
+          
+          @keyframes pulse {
+            from { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 154, 158, 0.7); }
+            to { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(255, 154, 158, 0); }
           }
           .metric-card {
       background: var(--surface);
@@ -386,23 +451,42 @@ const Dashboard: React.FC = () => {
                 📊 Category Distribution
               </h3>
               <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={chartData.categories}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }: any) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
+                <BarChart data={chartData.categories}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                  <XAxis 
+                    dataKey="name" 
+                    fontSize={12}
+                    interval={0} 
+                    angle={-45} 
+                    textAnchor="end" 
+                    height={80}
+                  />
+                  <YAxis fontSize={12} />
+                  <Tooltip 
+                    formatter={(value: any) => [`${value} products`, 'Category Count']}
+                  />
+                  <Legend
+                    iconType="rect"
+                    formatter={() => 'Category Performance (High: Green, Medium: Orange, Low: Red)'}
+                  />
+                  <Bar 
+                    dataKey="value" 
+                    radius={[6,6,0,0]}
+                    stroke="#5a67d8"
+                    strokeWidth={1}
                   >
                     {chartData.categories.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={
+                          entry.value > 20 ? COLOR_SCHEME.success :  // High category count
+                          entry.value > 10 ? COLOR_SCHEME.warning :  // Medium category count
+                          COLOR_SCHEME.danger                        // Low category count
+                        }
+                      />
                     ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
+                  </Bar>
+                </BarChart>
               </ResponsiveContainer>
             </div>
 
@@ -414,10 +498,39 @@ const Dashboard: React.FC = () => {
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={chartData.stockLevels}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+                  <XAxis 
+                    dataKey="name" 
+                    fontSize={12}
+                    interval={0} 
+                    angle={-45} 
+                    textAnchor="end" 
+                    height={80}
+                  />
+                  <YAxis fontSize={12} />
+                  <Tooltip 
+                    formatter={(value: any) => [`${value} units`, 'Stock Level']}
+                  />
+                  <Legend
+                    iconType="rect"
+                    formatter={() => 'Stock Status (High: Green, Medium: Orange, Low: Red)'}
+                  />
+                  <Bar 
+                    dataKey="value" 
+                    radius={[6, 6, 0, 0]}
+                    stroke="#1d4ed8"
+                    strokeWidth={1}
+                  >
+                    {chartData.stockLevels.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={
+                          entry.value > 50 ? COLOR_SCHEME.success :  // High stock
+                          entry.value > 20 ? COLOR_SCHEME.warning :  // Medium stock
+                          COLOR_SCHEME.danger                        // Low stock
+                        }
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
