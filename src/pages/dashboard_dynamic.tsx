@@ -250,14 +250,10 @@ const Dashboard: React.FC = () => {
       </style>
 
       {/* Header */}
-      <div className="page-header fade-in" style={{ marginBottom: '32px' }}>
+      <div className="page-header fade-in">
         <div>
-          <h1 className="page-title page-title--solid" style={{ fontSize: '32px', marginBottom: '8px' }}>
-            Dashboard
-          </h1>
-          <p className="page-description" style={{ margin: 0 }}>
-            Real-time overview of your inventory system
-          </p>
+          <h1 className="page-title page-title--solid">📊 Dashboard</h1>
+          <p className="page-description">Real-time overview of your inventory and sales</p>
           <div style={{ 
             marginTop: '8px', fontSize: '12px', color: 'var(--text-muted)',
             display: 'flex',

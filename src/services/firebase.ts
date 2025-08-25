@@ -67,3 +67,9 @@ export const getAnalyticsInstance = (): Analytics | null => {
     return null;
   }
 };
+
+// Export convenient access to Firestore instance
+export { getDbInstance as db };
+
+// Also export for backward compatibility and direct access
+export const firestoreDb = getDbInstance;

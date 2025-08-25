@@ -12,6 +12,18 @@ import {
 } from '../types';
 import { formatCurrency, formatIndianNumber, calculateGST } from '../utils/helpers';
 import { productsAPI } from './api';
+import { getDbInstance } from './firebase';
+import { collection, addDoc, getDocs, query, where, orderBy, Timestamp } from 'firebase/firestore';
+
+interface ReportHistory {
+  id?: string;
+  reportType: string;
+  generatedAt: Timestamp;
+  generatedBy: string;
+  config: ReportConfig;
+  fileName: string;
+  status: 'completed' | 'failed';
+}
 
 // Clean currency formatter for PDF
 const formatCurrencyForPDF = (amount: number): string => {
@@ -27,7 +39,63 @@ const formatCurrencyForPDF = (amount: number): string => {
   }
 };
 
+// Get current user ID for Firebase operations
+const getCurrentUserId = (): string => {
+  return localStorage.getItem('currentUserId') || 'system';
+};
+
 class ReportService {
+  // Save report history to Firebase
+  private async saveReportHistory(reportType: string, config: ReportConfig, fileName: string, status: 'completed' | 'failed'): Promise<void> {
+    try {
+      const db = getDbInstance();
+      if (!db) {
+        console.warn('Firebase not available, skipping report history save');
+        return;
+      }
+
+      const reportHistory: ReportHistory = {
+        reportType,
+        generatedAt: Timestamp.now(),
+        generatedBy: getCurrentUserId(),
+        config,
+        fileName,
+        status
+      };
+
+      await addDoc(collection(db, 'reportHistory'), reportHistory);
+    } catch (error) {
+      console.error('Error saving report history:', error);
+      // Continue with report generation even if history save fails
+    }
+  }
+
+  // Get report history from Firebase
+  async getReportHistory(limit: number = 50): Promise<ReportHistory[]> {
+    try {
+      const db = getDbInstance();
+      if (!db) {
+        console.warn('Firebase not available, returning empty report history');
+        return [];
+      }
+
+      const reportsRef = collection(db, 'reportHistory');
+      const q = query(
+        reportsRef,
+        orderBy('generatedAt', 'desc'),
+        where('generatedBy', '==', getCurrentUserId())
+      );
+      
+      const querySnapshot = await getDocs(q);
+      return querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      })) as ReportHistory[];
+    } catch (error) {
+      console.error('Error fetching report history:', error);
+      return [];
+    }
+  }
   private addHeader(pdf: jsPDF, title: string): number {
     const pageWidth = pdf.internal.pageSize.getWidth();
     

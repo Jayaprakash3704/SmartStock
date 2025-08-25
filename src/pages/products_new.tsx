@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { productsAPI } from '../services/api';
 import { Product, ProductFormData } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
+import SellModal from '../components/SellModal';
 
 // Product Form Component
 const ProductForm: React.FC<{
@@ -185,6 +186,7 @@ const Products: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sellingProduct, setSellingProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     fetchProducts();
@@ -275,26 +277,21 @@ const Products: React.FC = () => {
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <h1 style={{ 
-          fontSize: '32px', 
-          fontWeight: 'bold', 
-          color: 'white',
-          textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-          marginBottom: '8px'
-        }}>
-          Products
-        </h1>
-        <p style={{ 
-          color: 'rgba(255, 255, 255, 0.8)', 
-          fontSize: '16px',
-          textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
-        }}>
-          Manage your product catalog
-        </p>
-      </div>
+    <div style={{ minHeight: '100%', background: 'var(--bg)' }}>
+      <div className="page-container">
+        {/* Header */}
+        <div className="page-header">
+          <div>
+            <h1 className="page-title page-title--solid">📦 Products</h1>
+            <p className="page-description">Manage your product catalog and pricing</p>
+          </div>
+          <button
+            className="btn-primary"
+            onClick={() => setIsAddingProduct(true)}
+          >
+            + Add Product
+          </button>
+        </div>
 
       {/* Add Product Form */}
       {isAddingProduct && (
@@ -453,6 +450,17 @@ const Products: React.FC = () => {
                       <td>
                         <div className="action-buttons">
                           <button
+                            className="btn-success"
+                            onClick={() => setSellingProduct(product)}
+                            disabled={product.quantity <= 0}
+                            style={{ 
+                              opacity: product.quantity <= 0 ? 0.5 : 1,
+                              cursor: product.quantity <= 0 ? 'not-allowed' : 'pointer'
+                            }}
+                          >
+                            🛒 Sell
+                          </button>
+                          <button
                             className="btn-warning"
                             onClick={() => setEditingProduct(product)}
                           >
@@ -497,6 +505,18 @@ const Products: React.FC = () => {
           )}
         </div>
       )}
+
+      {/* Sell Modal */}
+      {sellingProduct && (
+        <SellModal
+          product={sellingProduct}
+          onClose={() => setSellingProduct(null)}
+          onSaleComplete={() => {
+            fetchProducts(); // Refresh products to update quantities
+          }}
+        />
+      )}
+      </div>
     </div>
   );
 };

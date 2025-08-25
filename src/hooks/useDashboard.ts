@@ -104,17 +104,30 @@ export const useDashboard = () => {
       return acc;
     }, {} as Record<string, number>);
 
-    const categories = Object.entries(categoryMap).map(([name, value]) => ({
+    // Enhanced color palette for categories using professional gradients
+    const categoryColors = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+      'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+      'linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)',
+      'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)'
+    ];
+
+    const categories = Object.entries(categoryMap).map(([name, value], index) => ({
       name,
       value,
-      color: `hsl(${Math.random() * 360}, 70%, 50%)`
+      color: categoryColors[index % categoryColors.length],
+      solidColor: ['#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#a8edea', '#ff9a9e', '#a1c4fd'][index % 8]
     }));
 
-    // Stock levels distribution
+    // Stock levels distribution with professional colors
     const stockLevels = [
-      { name: 'Good Stock', value: products.filter(p => p.minStockLevel && p.quantity > p.minStockLevel * 1.5).length, color: '#10b981' },
-      { name: 'Low Stock', value: products.filter(p => p.minStockLevel && p.quantity <= p.minStockLevel && p.quantity > 0).length, color: '#f59e0b' },
-      { name: 'Out of Stock', value: products.filter(p => p.quantity === 0).length, color: '#ef4444' }
+      { name: 'Good Stock', value: products.filter(p => p.minStockLevel && p.quantity > p.minStockLevel * 1.5).length, color: '#43e97b', gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' },
+      { name: 'Low Stock', value: products.filter(p => p.minStockLevel && p.quantity <= p.minStockLevel && p.quantity > 0).length, color: '#ffd93d', gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
+      { name: 'Out of Stock', value: products.filter(p => p.quantity === 0).length, color: '#ff6b6b', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }
     ];
 
     // Sales trends (mock data for now)

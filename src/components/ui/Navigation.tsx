@@ -9,7 +9,8 @@ import {
   Settings, 
   Menu, 
   X,
-  LogOut
+  LogOut,
+  DollarSign
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { Button } from './Button';
@@ -27,7 +28,8 @@ const navigationItems = [
   { id: 'dashboard', label: 'Dashboard', sub: 'Overview & KPIs', icon: Home },
   { id: 'inventory', label: 'Inventory', sub: 'Stock & Reorders', icon: Package },
   { id: 'products', label: 'Products', sub: 'Catalog & Pricing', icon: ShoppingCart },
-  { id: 'reports', label: 'Reports', sub: 'Sales & Insights', icon: BarChart3 },
+  { id: 'sales', label: 'Sales', sub: 'Transactions & Revenue', icon: DollarSign },
+  { id: 'reports', label: 'Reports', sub: 'Analytics & Insights', icon: BarChart3 },
   { id: 'users', label: 'Users', sub: 'Team & Roles', icon: Users },
 ];
 
@@ -113,28 +115,28 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-center justify-between h-16">
-            {/* Brand Section */}
+        <div className="w-full px-4 lg:px-6">
+          <div className="flex items-center justify-between h-18 py-2">
+            {/* Brand Section - Fixed width */}
             <motion.div 
-              className="flex items-center gap-3"
+              className="flex items-center gap-3 min-w-[240px]"
               initial={{ x: -30, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.1 }}
             >
-              <div className="w-10 h-10 bg-gradient-to-br from-primary via-primary/80 to-primary/60 rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
-                <Package className="w-5 h-5 text-white" />
+              <div className="w-11 h-11 bg-gradient-to-br from-primary via-primary/80 to-primary/60 rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
+                <Package className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                   SmartStock
                 </h1>
-                <p className="text-xs text-muted font-medium">Inventory System</p>
+                <p className="text-xs text-muted font-medium">POS & Inventory System</p>
               </div>
             </motion.div>
 
-            {/* Navigation Items */}
-            <div className="flex items-center gap-1">
+            {/* Navigation Items - Centered */}
+            <div className="flex items-center justify-center gap-1 flex-1">
               {navigationItems.map((item, index) => {
                 const isActive = currentPage === item.id;
                 const Icon = item.icon;
@@ -144,7 +146,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
                     key={item.id}
                     onClick={() => onPageChange(item.id)}
                     className={`
-                      relative px-6 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 group
+                      relative px-4 py-2.5 rounded-xl font-medium text-sm transition-all duration-300 group
                       ${isActive 
                         ? 'bg-gradient-to-r from-primary to-primary/80 text-white shadow-lg shadow-primary/30' 
                         : 'text-muted hover:text-foreground hover:bg-gradient-to-r hover:from-accent/30 hover:to-accent/10'
@@ -189,44 +191,47 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
               })}
             </div>
 
-            {/* Right Actions */}
+            {/* Right Actions - Fixed width and properly aligned */}
             <motion.div 
-              className="flex items-center gap-2"
+              className="flex items-center gap-3 min-w-[320px] justify-end"
               initial={{ x: 30, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <NotificationBell />
-              <motion.button
-                onClick={() => onPageChange('settings')}
-                className="p-2.5 rounded-xl text-muted hover:text-foreground hover:bg-accent/30 transition-all duration-200"
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Settings size={18} />
-              </motion.button>
-              
-              <ThemeToggle />
-
-              <motion.button
-                onClick={onSignOut}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-muted hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <LogOut size={16} />
-                <span className="hidden xl:inline">Sign Out</span>
-              </motion.button>
-
-              {/* User chip (after Sign Out) */}
-              <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-xl border border-border/60 bg-card shadow-sm">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary via-primary/80 to-primary/60 text-white flex items-center justify-center text-xs font-bold shadow-primary/30 shadow">
+              {/* User Info First */}
+              <div className="flex items-center gap-3 px-3 py-2 rounded-xl border border-border/60 bg-card shadow-sm">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary via-primary/80 to-primary/60 text-white flex items-center justify-center text-sm font-bold shadow-primary/30 shadow">
                   {initials}
                 </div>
                 <div className="leading-tight">
-                  <div className="text-sm font-semibold max-w-[8rem] truncate">{displayName}</div>
-                  <div className="text-[11px] text-muted">{user?.role ?? 'admin'}</div>
+                  <div className="text-sm font-semibold max-w-[9rem] truncate text-left">{displayName}</div>
+                  <div className="text-[11px] text-muted text-left">{user?.role ?? 'admin'}</div>
                 </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-1">
+                <NotificationBell />
+                <motion.button
+                  onClick={() => onPageChange('settings')}
+                  className="p-2.5 rounded-xl text-muted hover:text-foreground hover:bg-accent/30 transition-all duration-200"
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <Settings size={18} />
+                </motion.button>
+                
+                <ThemeToggle />
+
+                <motion.button
+                  onClick={onSignOut}
+                  className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-muted hover:text-destructive hover:bg-destructive/10 transition-all duration-200"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <LogOut size={16} />
+                  <span className="hidden xl:inline">Sign Out</span>
+                </motion.button>
               </div>
             </motion.div>
           </div>
@@ -242,18 +247,28 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
       >
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-gradient-to-br from-primary via-primary/80 to-primary/60 rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
+            <div className="w-10 h-10 bg-gradient-to-br from-primary via-primary/80 to-primary/60 rounded-xl flex items-center justify-center shadow-lg shadow-primary/25">
               <Package className="w-5 h-5 text-white" />
             </div>
             <div>
               <h1 className="text-lg font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                 SmartStock
               </h1>
-              <p className="text-xs text-muted font-medium">Inventory System</p>
+              <p className="text-xs text-muted font-medium">POS & Inventory</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            {/* User info for mobile */}
+            <div className="flex items-center gap-2 px-2 py-1 rounded-lg border border-border/60 bg-card">
+              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-primary via-primary/80 to-primary/60 text-white flex items-center justify-center text-xs font-bold">
+                {initials}
+              </div>
+              <div className="leading-tight">
+                <div className="text-xs font-semibold max-w-[5rem] truncate">{displayName.split(' ')[0]}</div>
+              </div>
+            </div>
+            
             <ThemeToggle />
             <motion.button
               onClick={() => setIsMobileMenuOpen(true)}
@@ -293,7 +308,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
                   <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                     SmartStock
                   </h1>
-                  <p className="text-sm text-muted font-medium">Inventory System</p>
+                  <p className="text-sm text-muted font-medium">POS & Inventory System</p>
                 </div>
               </div>
               

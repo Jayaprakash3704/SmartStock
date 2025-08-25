@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { EnhancedUser, UserRole } from '../types';
-import { usersAPI } from '../services/api';
+import { usersAPI, authAPI } from '../services/api';
+import { getDbInstance } from '../services/firebase';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore';
 
 const USER_ROLES: UserRole[] = [
   {
     id: 'admin',
     name: 'Administrator',
-    description: 'Full system access and management',
+    description: 'Full system access and user management',
     permissions: [
       'products:read', 'products:write', 'products:delete', 'products:export',
       'inventory:read', 'inventory:write', 'inventory:delete', 'inventory:export',
+      'sales:read', 'sales:write', 'sales:delete', 'sales:export',
       'reports:read', 'reports:write', 'reports:delete', 'reports:export',
       'settings:read', 'settings:write', 'settings:delete', 'settings:export',
       'users:read', 'users:write', 'users:delete', 'users:export'
@@ -17,11 +20,12 @@ const USER_ROLES: UserRole[] = [
   },
   {
     id: 'manager',
-    name: 'Manager',
-    description: 'Manage inventory and view reports',
+    name: 'Store Manager',
+    description: 'Manage store operations and sales',
     permissions: [
       'products:read', 'products:write', 'products:export',
       'inventory:read', 'inventory:write', 'inventory:export',
+      'sales:read', 'sales:write', 'sales:export',
       'reports:read', 'reports:export',
       'settings:read',
       'users:read'
@@ -29,8 +33,8 @@ const USER_ROLES: UserRole[] = [
   },
   {
     id: 'staff',
-    name: 'Staff',
-    description: 'Basic inventory operations',
+    name: 'General Staff',
+    description: 'Basic inventory operations only',
     permissions: [
       'products:read',
       'inventory:read', 'inventory:write',
@@ -39,88 +43,10 @@ const USER_ROLES: UserRole[] = [
   }
 ];
 
-// Mock users data
-const mockUsers: EnhancedUser[] = [
-  {
-    id: '1',
-    username: 'admin',
-    email: 'admin@smartstock.com',
-    role: 'admin',
-    isActive: true,
-    permissions: ['all'],
-    profile: {
-      firstName: 'Rajesh',
-      lastName: 'Kumar',
-      phone: '+91 98765 43210',
-      department: 'Management',
-      avatar: undefined
-    },
-    settings: {
-      notifications: {
-        email: true,
-        push: true,
-        sms: true
-      },
-      dashboard: {
-        showRecentActivities: true,
-        showQuickStats: true
-      }
-    },
-    lastLogin: new Date('2024-11-20T09:30:00')
-  },
-  {
-    id: '2',
-    username: 'manager1',
-    email: 'priya@smartstock.com',
-    role: 'manager',
-    isActive: true,
-    permissions: ['products.read', 'inventory.manage', 'reports.view'],
-    profile: {
-      firstName: 'Priya',
-      lastName: 'Sharma',
-      phone: '+91 87654 32109',
-      department: 'Operations',
-    },
-    settings: {
-      notifications: {
-        email: true,
-        push: false,
-        sms: true
-      },
-      dashboard: {
-        showRecentActivities: true,
-        showQuickStats: true
-      }
-    },
-    lastLogin: new Date('2024-11-20T11:15:00')
-  },
-  {
-    id: '3',
-    username: 'staff1',
-    email: 'amit@smartstock.com',
-    role: 'staff',
-    isActive: true,
-    permissions: ['inventory.update', 'products.view'],
-    profile: {
-      firstName: 'Amit',
-      lastName: 'Patel',
-      phone: '+91 76543 21098',
-      department: 'Warehouse',
-    },
-    settings: {
-      notifications: {
-        email: true,
-        push: false,
-        sms: false
-      },
-      dashboard: {
-        showRecentActivities: false,
-        showQuickStats: true
-      }
-    },
-    lastLogin: new Date('2024-11-19T16:45:00')
-  }
-];
+// Get current user ID for Firebase operations
+const getCurrentUserId = (): string => {
+  return localStorage.getItem('currentUserId') || 'system';
+};
 
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<EnhancedUser[]>([]);
@@ -132,46 +58,131 @@ const UserManagement: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Load users from Firebase on component mount
   useEffect(() => {
-    const load = async () => {
-      setIsLoading(true);
-      try {
-        const res = await usersAPI.getAll();
-        if (res.success) {
-          setUsers(res.data as any);
-        } else {
-          setUsers(mockUsers);
-        }
-      } catch {
-        setUsers(mockUsers);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    load();
+    loadUsers();
   }, []);
 
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    role: 'staff' as 'admin' | 'manager' | 'staff',
-    firstName: '',
-    lastName: '',
-    phone: '',
-    department: '',
-    isActive: true,
-  });
+  const loadUsers = async () => {
+    setIsLoading(true);
+    try {
+      const db = getDbInstance();
+      if (db) {
+        // Load from Firebase
+        const usersCollection = collection(db, 'users');
+        const querySnapshot = await getDocs(usersCollection);
+        const firebaseUsers = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            username: data.username || '',
+            email: data.email || '',
+            role: data.role || 'staff',
+            isActive: data.isActive !== false,
+            permissions: data.permissions || [],
+            profile: data.profile || {
+              firstName: '',
+              lastName: '',
+              phone: '',
+              department: ''
+            },
+            settings: data.settings || {
+              notifications: { email: true, push: false, sms: false },
+              dashboard: { showRecentActivities: true, showQuickStats: true }
+            },
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || Date.now()),
+            lastLogin: data.lastLogin?.toDate ? data.lastLogin.toDate() : new Date(data.lastLogin || Date.now())
+          } as EnhancedUser;
+        });
+        
+        setUsers(firebaseUsers);
+        
+        // If no users exist, create default admin user
+        if (firebaseUsers.length === 0) {
+          await createDefaultAdminUser();
+        }
+      } else {
+        // Fallback: Use API or create default user
+        const res = await usersAPI.getAll();
+        if (res.success && res.data.length > 0) {
+          setUsers(res.data as EnhancedUser[]);
+        } else {
+          await createDefaultAdminUser();
+        }
+      }
+    } catch (error) {
+      console.error('Error loading users:', error);
+      // Create default admin user if error occurs
+      await createDefaultAdminUser();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const createDefaultAdminUser = async () => {
+    const defaultAdmin = {
+      username: 'admin',
+      email: 'admin@smartstock.com',
+      role: 'admin',
+      isActive: true,
+      permissions: ['all'],
+      profile: {
+        firstName: 'System',
+        lastName: 'Administrator',
+        phone: '+91 98765 43210',
+        department: 'Management'
+      },
+      settings: {
+        notifications: {
+          email: true,
+          push: true,
+          sms: true
+        },
+        dashboard: {
+          showRecentActivities: true,
+          showQuickStats: true
+        }
+      }
+    };
+
+    try {
+      const db = getDbInstance();
+      if (db) {
+        const usersCollection = collection(db, 'users');
+        const docRef = await addDoc(usersCollection, {
+          ...defaultAdmin,
+          createdAt: Timestamp.now(),
+          lastLogin: Timestamp.now()
+        });
+        
+        const newUser: EnhancedUser = {
+          id: docRef.id,
+          ...defaultAdmin,
+          createdAt: new Date(),
+          lastLogin: new Date()
+        } as EnhancedUser;
+        
+        setUsers([newUser]);
+      } else {
+        // Fallback to API
+        const res = await usersAPI.create(defaultAdmin);
+        if (res.success) {
+          setUsers([res.data]);
+        }
+      }
+    } catch (error) {
+      console.error('Error creating default admin user:', error);
+    }
+  };
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = 
+    const matchesSearch = !searchTerm || 
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      `${user.profile.firstName} ${user.profile.lastName}`.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesRole = !filterRole || user.role === filterRole;
-    const matchesStatus = !filterStatus || 
+    const matchesStatus = !filterStatus ||
       (filterStatus === 'active' && user.isActive) ||
       (filterStatus === 'inactive' && !user.isActive);
 
@@ -180,298 +191,210 @@ const UserManagement: React.FC = () => {
 
   const handleCreateUser = () => {
     setEditingUser(null);
-    setFormData({
-      username: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      role: 'staff',
-      firstName: '',
-      lastName: '',
-      phone: '',
-      department: '',
-      isActive: true,
-    });
     setShowUserForm(true);
   };
 
   const handleEditUser = (user: EnhancedUser) => {
     setEditingUser(user);
-    setFormData({
-      username: user.username,
-      email: user.email,
-      password: '',
-      confirmPassword: '',
-      role: user.role,
-      firstName: user.profile.firstName,
-      lastName: user.profile.lastName,
-      phone: user.profile.phone || '',
-      department: user.profile.department || '',
-      isActive: user.isActive,
-    });
     setShowUserForm(true);
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+  const handleDeleteUser = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this user?')) return;
+    
     try {
-      await usersAPI.delete(userId);
-      setUsers(users.filter(user => user.id !== userId));
-    } catch (e) {
-      alert('Failed to delete user');
-    }
-  };
-
-  const handleSubmitUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingUser && formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
-      return;
-    }
-    setIsSaving(true);
-    try {
-      if (editingUser) {
-        const updated: EnhancedUser = {
-          ...editingUser,
-          username: formData.username,
-          email: formData.email,
-          role: formData.role,
-          isActive: formData.isActive,
-          profile: {
-            ...editingUser.profile,
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            phone: formData.phone,
-            department: formData.department,
-          }
-        };
-        await usersAPI.update(editingUser.id, updated);
-        setUsers(users.map(u => (u.id === editingUser.id ? updated : u)));
+      setIsSaving(true);
+      const db = getDbInstance();
+      if (db) {
+        await deleteDoc(doc(db, 'users', id));
       } else {
-        const newUser: EnhancedUser = {
-          id: Date.now().toString(),
-          username: formData.username,
-          email: formData.email,
-          role: formData.role,
-          isActive: formData.isActive,
-          permissions: [],
-          profile: {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            phone: formData.phone,
-            department: formData.department,
-          },
-          settings: {
-            notifications: { email: true, push: false, sms: false },
-            dashboard: { showRecentActivities: false, showQuickStats: true }
-          }
-        };
-        const res = await usersAPI.create(newUser);
-        const created = (res.success && res.data) ? (res.data as any) : newUser;
-        setUsers([...users, created]);
+        await usersAPI.delete(id);
       }
-      setShowUserForm(false);
-    } catch (err) {
-      alert('Failed to save user');
+      
+      setUsers(users.filter(user => user.id !== id));
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Failed to delete user. Please try again.');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const toggleUserStatus = (userId: string) => {
-    setUsers(users.map(user => 
-      user.id === userId 
-        ? { ...user, isActive: !user.isActive }
-        : user
-    ));
-  };
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin': return '#dc2626';
-      case 'manager': return '#f59e0b';
-      case 'staff': return '#059669';
-      default: return '#6b7280';
+  const handleSaveUser = async (userData: Partial<EnhancedUser>) => {
+    try {
+      setIsSaving(true);
+      const db = getDbInstance();
+      
+      if (editingUser) {
+        // Update existing user
+        if (db) {
+          await updateDoc(doc(db, 'users', editingUser.id), {
+            ...userData,
+            updatedAt: Timestamp.now()
+          });
+        } else {
+          await usersAPI.update(editingUser.id, userData);
+        }
+        
+        const updatedUser = { ...editingUser, ...userData };
+        setUsers(users.map(user => user.id === editingUser.id ? updatedUser : user));
+      } else {
+        // Create new user
+        const newUserData = {
+          ...userData,
+          createdAt: Timestamp.now(),
+          lastLogin: Timestamp.now()
+        };
+        
+        if (db) {
+          const docRef = await addDoc(collection(db, 'users'), newUserData);
+          const newUser: EnhancedUser = {
+            id: docRef.id,
+            ...userData,
+            createdAt: new Date(),
+            lastLogin: new Date()
+          } as EnhancedUser;
+          setUsers([...users, newUser]);
+        } else {
+          const res = await usersAPI.create(userData);
+          if (res.success) {
+            setUsers([...users, res.data]);
+          }
+        }
+      }
+      
+      setShowUserForm(false);
+      setEditingUser(null);
+    } catch (error) {
+      console.error('Error saving user:', error);
+      alert('Failed to save user. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="page-container">
+        <div className="flex items-center justify-center min-h-96">
+          <div className="loading-spinner"></div>
+          <span className="ml-4">Loading users...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page-container">
-      {isLoading && (
-        <div className="glass-card" style={{ marginBottom: '16px' }}>
-          <div className="loading-spinner"></div>
-          <span style={{ marginLeft: 8, color: 'var(--text-muted)' }}>Loading users...</span>
-        </div>
-      )}
       <div className="page-header">
         <div>
           <h1 className="page-title">User Management</h1>
-          <p className="page-description">Manage users, roles, and permissions</p>
+          <p className="page-description">
+            Manage team members and their access permissions
+          </p>
         </div>
-        <button
+        <button 
           onClick={handleCreateUser}
           className="btn-primary"
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          disabled={isSaving}
         >
-          <span style={{ fontSize: '16px' }}>➕</span>
-          Add User
+          Add New User
         </button>
       </div>
 
       {/* Filters */}
-      <div className="glass-card" style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto', gap: '16px', alignItems: 'end' }}>
-          <div className="form-group" style={{ margin: 0 }}>
+      <div className="glass-card p-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
             <label className="form-label">Search Users</label>
-            <div style={{ position: 'relative' }}>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search by name, username, or email..."
-                className="modern-input"
-                style={{ paddingLeft: '40px' }}
-              />
-              <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px', color: '#6b7280' }}>🔍</span>
-            </div>
+            <input
+              type="text"
+              className="modern-input"
+              placeholder="Search by name, username, or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
-          
-          <div className="form-group" style={{ margin: 0, minWidth: '120px' }}>
-            <label className="form-label">Role</label>
+          <div>
+            <label className="form-label">Filter by Role</label>
             <select
+              className="modern-select"
               value={filterRole}
               onChange={(e) => setFilterRole(e.target.value)}
-              className="modern-select"
             >
               <option value="">All Roles</option>
-              <option value="admin">Admin</option>
-              <option value="manager">Manager</option>
-              <option value="staff">Staff</option>
+              {USER_ROLES.map(role => (
+                <option key={role.id} value={role.id}>{role.name}</option>
+              ))}
             </select>
           </div>
-
-          <div className="form-group" style={{ margin: 0, minWidth: '120px' }}>
-            <label className="form-label">Status</label>
+          <div>
+            <label className="form-label">Filter by Status</label>
             <select
+              className="modern-select"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="modern-select"
             >
               <option value="">All Status</option>
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
           </div>
-
-          <button className="btn-secondary" style={{ height: '44px' }}>
-            Filter 🔽
-          </button>
         </div>
       </div>
 
       {/* Users Table */}
-      <div className="glass-card" style={{ overflow: 'hidden' }}>
-        <div className="modern-table-container">
-          <table className="modern-table">
+      <div className="glass-card">
+        <div className="overflow-x-auto">
+          <table className="w-full">
             <thead>
-              <tr>
-                <th>User</th>
-                <th>Role</th>
-                <th>Department</th>
-                <th>Last Login</th>
-                <th>Status</th>
-                <th>Actions</th>
+              <tr className="border-b border-border">
+                <th className="table-header text-left">User</th>
+                <th className="table-header text-left">Role</th>
+                <th className="table-header text-left">Department</th>
+                <th className="table-header text-left">Status</th>
+                <th className="table-header text-left">Last Login</th>
+                <th className="table-header text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.map((user) => (
-                <tr key={user.id}>
-                  <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div 
-                        style={{ 
-                          width: '40px', 
-                          height: '40px', 
-                          borderRadius: '50%', 
-                          background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-600) 100%)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontWeight: '600',
-                          fontSize: '14px'
-                        }}
-                      >
-                        {user.profile.firstName[0]}{user.profile.lastName[0]}
+                <tr key={user.id} className="border-b border-border hover:bg-surface-2">
+                  <td className="p-4">
+                    <div>
+                      <div className="font-semibold text-text">
+                        {user.profile?.firstName || ''} {user.profile?.lastName || ''}
                       </div>
-                      <div>
-                        <div style={{ fontWeight: '600', color: 'var(--text)' }}>
-                          {user.profile.firstName} {user.profile.lastName}
-                        </div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                          @{user.username} • {user.email}
-                        </div>
-                        {user.profile.phone && (
-                          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-                            {user.profile.phone}
-                          </div>
-                        )}
+                      <div className="text-sm text-muted">
+                        @{user.username} • {user.email}
                       </div>
+                      {user.profile?.phone && (
+                        <div className="text-xs text-muted">{user.profile.phone}</div>
+                      )}
                     </div>
                   </td>
-                  <td>
-                    <span 
-                      style={{ 
-                        backgroundColor: getRoleColor(user.role),
-                        color: 'white',
-                        padding: '4px 8px',
-                        borderRadius: '4px',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        textTransform: 'capitalize'
-                      }}
-                    >
-                      {user.role}
+                  <td className="p-4">
+                    <span className={`badge ${
+                      user.role === 'admin' ? 'badge-info' :
+                      user.role === 'manager' ? 'badge-success' :
+                      'badge-secondary'
+                    }`}>
+                      {USER_ROLES.find(r => r.id === user.role)?.name || user.role}
                     </span>
                   </td>
-                  <td>
-                    <span style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
-                      {user.profile.department || '-'}
-                    </span>
+                  <td className="p-4 text-muted">
+                    {user.profile?.department || 'Not specified'}
                   </td>
-                  <td>
-                    <span style={{ color: '#6b7280', fontSize: '14px' }}>
-                      {user.lastLogin 
-                        ? new Date(user.lastLogin).toLocaleDateString('en-IN', {
-                            day: '2-digit',
-                            month: 'short',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })
-                        : 'Never'
-                      }
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      onClick={() => toggleUserStatus(user.id)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        color: user.isActive ? 'var(--success)' : 'var(--danger)',
-                        fontSize: '12px',
-                        fontWeight: '500'
-                      }}
-                    >
+                  <td className="p-4">
+                    <span className={`badge ${user.isActive ? 'badge-success' : 'badge-danger'}`}>
                       {user.isActive ? 'Active' : 'Inactive'}
-                    </button>
+                    </span>
                   </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                  <td className="p-4 text-sm text-muted">
+                    {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('en-IN') : 'Never'}
+                  </td>
+                  <td className="p-4">
+                    <div className="flex justify-center space-x-2">
                       <button
                         onClick={() => handleEditUser(user)}
                         className="btn-icon"
@@ -479,203 +402,230 @@ const UserManagement: React.FC = () => {
                       >
                         ✏️
                       </button>
-                      <button
-                        onClick={() => handleDeleteUser(user.id)}
-                        className="btn-icon btn-danger"
-                        title="Delete User"
-                        disabled={user.role === 'admin'}
-                      >
-                        🗑️
-                      </button>
+                      {user.role !== 'admin' && (
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="btn-icon btn-danger"
+                          title="Delete User"
+                          disabled={isSaving}
+                        >
+                          🗑️
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          
+          {filteredUsers.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-muted">
+                {searchTerm || filterRole || filterStatus 
+                  ? 'No users match your search criteria.' 
+                  : 'No users found. Create your first user to get started.'
+                }
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
       {/* User Form Modal */}
       {showUserForm && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '20px'
-        }}>
-          <div className="glass-card" style={{ maxWidth: '600px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h2 style={{ fontSize: '24px', fontWeight: '600', margin: 0 }}>
-                {editingUser ? 'Edit User' : 'Add New User'}
-              </h2>
-              <button
-                onClick={() => setShowUserForm(false)}
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  fontSize: '24px', 
-                  cursor: 'pointer',
-                  color: '#6b7280'
-                }}
-              >
-                ×
-              </button>
-            </div>
+        <UserFormModal
+          user={editingUser}
+          roles={USER_ROLES}
+          onSave={handleSaveUser}
+          onClose={() => {
+            setShowUserForm(false);
+            setEditingUser(null);
+          }}
+          isSaving={isSaving}
+        />
+      )}
+    </div>
+  );
+};
 
-            <form onSubmit={handleSubmitUser}>
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">First Name *</label>
-                  <input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, firstName: e.target.value }))}
-                    required
-                    className="modern-input"
-                    placeholder="Enter first name"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Last Name *</label>
-                  <input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, lastName: e.target.value }))}
-                    required
-                    className="modern-input"
-                    placeholder="Enter last name"
-                  />
-                </div>
-              </div>
+// User Form Modal Component
+interface UserFormModalProps {
+  user: EnhancedUser | null;
+  roles: UserRole[];
+  onSave: (userData: Partial<EnhancedUser>) => void;
+  onClose: () => void;
+  isSaving: boolean;
+}
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Username *</label>
-                  <input
-                    type="text"
-                    value={formData.username}
-                    onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
-                    required
-                    className="modern-input"
-                    placeholder="Enter username"
-                  />
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Email *</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    required
-                    className="modern-input"
-                    placeholder="Enter email address"
-                  />
-                </div>
-              </div>
+const UserFormModal: React.FC<UserFormModalProps> = ({ user, roles, onSave, onClose, isSaving }) => {
+  const [formData, setFormData] = useState({
+    username: user?.username || '',
+    email: user?.email || '',
+    role: user?.role || 'staff',
+    isActive: user?.isActive !== false,
+    profile: {
+      firstName: user?.profile?.firstName || '',
+      lastName: user?.profile?.lastName || '',
+      phone: user?.profile?.phone || '',
+      department: user?.profile?.department || ''
+    },
+    settings: {
+      notifications: {
+        email: user?.settings?.notifications?.email !== false,
+        push: user?.settings?.notifications?.push || false,
+        sms: user?.settings?.notifications?.sms || false
+      },
+      dashboard: {
+        showRecentActivities: user?.settings?.dashboard?.showRecentActivities !== false,
+        showQuickStats: user?.settings?.dashboard?.showQuickStats !== false
+      }
+    }
+  });
 
-              {!editingUser && (
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">Password *</label>
-                    <input
-                      type="password"
-                      value={formData.password}
-                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                      required
-                      className="modern-input"
-                      placeholder="Enter password"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label className="form-label">Confirm Password *</label>
-                    <input
-                      type="password"
-                      value={formData.confirmPassword}
-                      onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                      required
-                      className="modern-input"
-                      placeholder="Confirm password"
-                    />
-                  </div>
-                </div>
-              )}
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.username.trim() || !formData.email.trim()) {
+      alert('Username and email are required.');
+      return;
+    }
+    onSave(formData);
+  };
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label className="form-label">Role *</label>
-                  <select
-                    value={formData.role}
-                    onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value as any }))}
-                    required
-                    className="modern-select"
-                  >
-                    <option value="staff">Staff</option>
-                    <option value="manager">Manager</option>
-                    <option value="admin">Administrator</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label className="form-label">Department</label>
-                  <input
-                    type="text"
-                    value={formData.department}
-                    onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
-                    className="modern-input"
-                    placeholder="Enter department"
-                  />
-                </div>
-              </div>
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content" style={{ maxWidth: '600px' }}>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold">
+            {user ? 'Edit User' : 'Create New User'}
+          </h2>
+          <button onClick={onClose} className="btn-icon">✕</button>
+        </div>
 
-              <div className="form-group">
-                <label className="form-label">Phone</label>
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4">
+            <div className="form-row">
+              <div>
+                <label className="form-label">Username *</label>
                 <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  type="text"
                   className="modern-input"
-                  placeholder="+91 98765 43210"
+                  value={formData.username}
+                  onChange={(e) => setFormData({...formData, username: e.target.value})}
+                  required
                 />
               </div>
-
-              <div style={{ marginTop: '24px', marginBottom: '24px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData(prev => ({ ...prev, isActive: e.target.checked }))}
-                    style={{ width: '16px', height: '16px' }}
-                  />
-                  <span style={{ fontSize: '14px', fontWeight: '500' }}>Active User</span>
-                </label>
+              <div>
+                <label className="form-label">Email *</label>
+                <input
+                  type="email"
+                  className="modern-input"
+                  value={formData.email}
+                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  required
+                />
               </div>
+            </div>
 
-              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowUserForm(false)}
-                  className="btn-secondary"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                >
-                  {editingUser ? 'Update User' : 'Create User'}
-                </button>
+            <div className="form-row">
+              <div>
+                <label className="form-label">First Name</label>
+                <input
+                  type="text"
+                  className="modern-input"
+                  value={formData.profile.firstName}
+                  onChange={(e) => setFormData({
+                    ...formData, 
+                    profile: {...formData.profile, firstName: e.target.value}
+                  })}
+                />
               </div>
-            </form>
+              <div>
+                <label className="form-label">Last Name</label>
+                <input
+                  type="text"
+                  className="modern-input"
+                  value={formData.profile.lastName}
+                  onChange={(e) => setFormData({
+                    ...formData, 
+                    profile: {...formData.profile, lastName: e.target.value}
+                  })}
+                />
+              </div>
+            </div>
+
+            <div className="form-row">
+              <div>
+                <label className="form-label">Role</label>
+                <select
+                  className="modern-select"
+                  value={formData.role}
+                  onChange={(e) => setFormData({...formData, role: e.target.value as any})}
+                >
+                  {roles.map(role => (
+                    <option key={role.id} value={role.id}>{role.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="form-label">Department</label>
+                <input
+                  type="text"
+                  className="modern-input"
+                  value={formData.profile.department}
+                  onChange={(e) => setFormData({
+                    ...formData, 
+                    profile: {...formData.profile, department: e.target.value}
+                  })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="form-label">Phone</label>
+              <input
+                type="tel"
+                className="modern-input"
+                value={formData.profile.phone}
+                onChange={(e) => setFormData({
+                  ...formData, 
+                  profile: {...formData.profile, phone: e.target.value}
+                })}
+              />
+            </div>
+
+            <div>
+              <label className="form-label">
+                <input
+                  type="checkbox"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
+                  className="mr-2"
+                />
+                Active User
+              </label>
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="flex justify-end space-x-4 mt-6 pt-4 border-t border-border">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn-secondary"
+              disabled={isSaving}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={isSaving}
+            >
+              {isSaving ? 'Saving...' : (user ? 'Update User' : 'Create User')}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

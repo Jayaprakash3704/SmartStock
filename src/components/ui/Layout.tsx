@@ -16,21 +16,23 @@ export const Layout: React.FC<LayoutProps> = ({ currentPage, onPageChange, onSig
     <div className="min-h-screen bg-background">
       <Navigation currentPage={currentPage} onPageChange={onPageChange} onSignOut={onSignOut} user={user || undefined} />
 
-      {/* Content below top navbar */}
+      {/* Content below top navbar with proper spacing */}
       <motion.main
-        className="container-responsive py-6 lg:py-8 min-h-screen"
+        className="w-full px-4 lg:px-6 py-6 lg:py-8 min-h-[calc(100vh-80px)]"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <motion.div
-          key={currentPage}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-        >
-          {children}
-        </motion.div>
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            key={currentPage}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            {children}
+          </motion.div>
+        </div>
       </motion.main>
       
       {/* Background decoration */}

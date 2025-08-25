@@ -14,10 +14,11 @@ import './styles/globals.css';
 // Import pages
 import Dashboard from './pages/dashboard_dynamic';
 import Inventory from './pages/inventory_dynamic';
-import Products from './pages/products';
+import Products from './pages/products_new';
+import Sales from './pages/sales';
 import Reports from './pages/reports';
 import Settings from './pages/settings';
-import Users from './pages/users';
+import UserManagement from './pages/users';
 
 // Dedicated Sign In page
 import SignIn from './pages/signin';
@@ -25,7 +26,7 @@ import SignUp from './pages/signup';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'products' | 'inventory' | 'reports' | 'settings' | 'users'>('dashboard');
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'products' | 'inventory' | 'sales' | 'reports' | 'settings' | 'users'>('dashboard');
   const [isLoading, setIsLoading] = useState(true);
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
 
@@ -74,12 +75,14 @@ const App: React.FC = () => {
         return <Products />;
       case 'inventory':
         return <Inventory />;
+      case 'sales':
+        return <Sales />;
       case 'reports':
         return <Reports />;
       case 'settings':
         return <Settings />;
       case 'users':
-        return <Users />;
+        return <UserManagement />;
       default:
         return <Dashboard />;
     }

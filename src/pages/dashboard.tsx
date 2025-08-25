@@ -19,7 +19,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddProduct }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#06b6d4', '#10b981', '#f59e0b'];
+  // Enhanced color palette for better visual hierarchy
+  const COLORS = [
+    '#667eea', // Primary purple-blue gradient start
+    '#f093fb', // Pink gradient start  
+    '#4facfe', // Blue gradient start
+    '#43e97b', // Green gradient start
+    '#fa709a', // Pink-orange gradient start
+    '#a8edea', // Cyan gradient start
+    '#ff9a9e', // Pink gradient start
+    '#a1c4fd'  // Blue gradient start
+  ];
 
   useEffect(() => {
     fetchDashboardData();
