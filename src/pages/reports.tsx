@@ -89,36 +89,19 @@ const CHART_COLORS = [
 
 // Meaningful color scheme for different data types
 const COLOR_SCHEME = {
-  success: '#10b981',      // Green - Good performance, high values
-  warning: '#f59e0b',      // Orange - Medium performance, caution
-  danger: '#ef4444',       // Red - Low performance, urgent attention
-  primary: '#667eea',      // Blue - Primary data, revenue
-  secondary: '#764ba2',    // Purple - Secondary data, targets
-  info: '#06b6d4',         // Cyan - Information, neutral data
-  neutral: '#6b7280'       // Gray - Baseline, average
+  success: '#22c55e',      // Green - Good performance, high values, positive
+  warning: '#f97316',      // Orange - Medium performance, caution, moderate
+  danger: '#ef4444',       // Red - Low performance, urgent attention, negative
+  primary: '#3b82f6',      // Blue - Primary data, normal, neutral
 };
 
-// Application-consistent chart colors based on blue theme with meaningful assignments
+// Simplified 4-color pattern: Red, Green, Blue, Orange
 const getChartColors = (theme: 'light' | 'dark') => {
-  if (theme === 'dark') {
-    return [
-      COLOR_SCHEME.primary,    // Primary blue
-      COLOR_SCHEME.success,    // Success green  
-      COLOR_SCHEME.warning,    // Warning orange
-      COLOR_SCHEME.danger,     // Danger red
-      COLOR_SCHEME.secondary,  // Secondary purple
-      COLOR_SCHEME.info,       // Info cyan
-      '#5a67d8', '#4f56d3', '#6b46c1', '#8b5cf6', '#a78bfa', '#93c5fd'
-    ];
-  }
   return [
-    COLOR_SCHEME.primary,    // Primary blue
-    COLOR_SCHEME.success,    // Success green
-    COLOR_SCHEME.warning,    // Warning orange  
-    COLOR_SCHEME.danger,     // Danger red
-    COLOR_SCHEME.secondary,  // Secondary purple
-    COLOR_SCHEME.info,       // Info cyan
-    '#1d4ed8', '#1e40af', '#2563eb', '#3b82f6', '#60a5fa', '#93c5fd'
+    COLOR_SCHEME.primary,    // Blue - Primary/Normal
+    COLOR_SCHEME.success,    // Green - Good/High  
+    COLOR_SCHEME.warning,    // Orange - Medium/Caution
+    COLOR_SCHEME.danger,     // Red - Low/Poor
   ];
 };
 
@@ -466,7 +449,7 @@ const ReportsEnhanced: React.FC = () => {
                     <Legend 
                       wrapperStyle={{ paddingTop: '20px' }}
                       iconType="rect"
-                      formatter={(value: string) => `${value} (High Volume: Green, Medium: Orange, Low: Red)`}
+                      formatter={(value: string) => `${value} - Color Guide: 🟢Green=High/Good, 🔵Blue=Normal, 🟠Orange=Medium/Caution, 🔴Red=Low/Poor`}
                     />
                     <Bar 
                       dataKey="value" 
@@ -525,11 +508,11 @@ const ReportsEnhanced: React.FC = () => {
                     >
                       {series.map((entry, index) => {
                         // Color coding based on value performance
-                        let color = COLOR_SCHEME.neutral;
+                        let color = COLOR_SCHEME.primary;
                         if (index === 0) color = COLOR_SCHEME.success;      // Top performer - Green
                         else if (index === 1) color = COLOR_SCHEME.primary; // Second - Blue  
-                        else if (index === 2) color = COLOR_SCHEME.info;    // Third - Cyan
-                        else if (index >= series.length - 2) color = COLOR_SCHEME.warning; // Low performers - Orange
+                        else if (index === 2) color = COLOR_SCHEME.warning; // Third - Orange
+                        else if (index >= series.length - 2) color = COLOR_SCHEME.danger; // Low performers - Red
                         
                         return (
                           <Cell 
@@ -571,8 +554,9 @@ const ReportsEnhanced: React.FC = () => {
                       wrapperStyle={{ paddingTop: '20px' }}
                       iconType="rect"
                       formatter={(value: string) => 
-                        value.includes('Actual') ? `${value} (Green: Sales Revenue)` :
-                        value.includes('Target') ? `${value} (Orange: Target Goals)` : value
+                        value.includes('Actual') ? `${value} - 🟢Green=Revenue` :
+                        value.includes('Target') ? `${value} - 🟠Orange=Goals` : 
+                        `${value} - Color Guide: 🟢Green=Revenue, 🟠Orange=Targets`
                       }
                     />
                     <Bar 
@@ -627,15 +611,14 @@ const ReportsEnhanced: React.FC = () => {
                     >
                       {productPerformance.map((entry, index) => {
                         // Performance-based color coding
-                        let color = COLOR_SCHEME.neutral;
+                        let color = COLOR_SCHEME.primary;
                         const maxSales = Math.max(...productPerformance.map(p => p.sales));
                         const performance = entry.sales / maxSales;
                         
                         if (performance > 0.8) color = COLOR_SCHEME.success;        // Excellent - Green
                         else if (performance > 0.6) color = COLOR_SCHEME.primary;  // Good - Blue
-                        else if (performance > 0.4) color = COLOR_SCHEME.info;     // Average - Cyan
-                        else if (performance > 0.2) color = COLOR_SCHEME.warning; // Below Average - Orange
-                        else color = COLOR_SCHEME.danger;                         // Poor - Red
+                        else if (performance > 0.4) color = COLOR_SCHEME.warning;  // Average - Orange
+                        else color = COLOR_SCHEME.danger;                          // Poor - Red
                         
                         return (
                           <Cell 
@@ -653,9 +636,8 @@ const ReportsEnhanced: React.FC = () => {
                   <br />
                   <span style={{ color: COLOR_SCHEME.success }}>● Excellent (80%+)</span> 
                   <span style={{ color: COLOR_SCHEME.primary }}> ● Good (60%+)</span> 
-                  <span style={{ color: COLOR_SCHEME.info }}> ● Average (40%+)</span> 
-                  <span style={{ color: COLOR_SCHEME.warning }}> ● Below Avg (20%+)</span> 
-                  <span style={{ color: COLOR_SCHEME.danger }}> ● Poor (&lt;20%)</span>
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Average (40%+)</span> 
+                  <span style={{ color: COLOR_SCHEME.danger }}> ● Poor (&lt;40%)</span>
                 </div>
               </div>
               <div className="chart-container">
@@ -677,7 +659,7 @@ const ReportsEnhanced: React.FC = () => {
                     <Legend 
                       wrapperStyle={{ paddingTop: '20px' }}
                       iconType="rect"
-                      formatter={(value: string) => `${value} (Premium: Green, Regular: Blue, Budget: Orange)`}
+                      formatter={(value: string) => `${value} - Color Guide: 🟢Green=Premium, 🔵Blue=Regular, 🟠Orange=New, 🔴Red=Occasional`}
                     />
                     <Bar 
                       dataKey="revenue" 
@@ -686,13 +668,12 @@ const ReportsEnhanced: React.FC = () => {
                       strokeWidth={1}
                     >
                       {customerSegments.map((entry, index) => {
-                        // Segment-based color coding
+                        // Segment-based color coding (using only 4 colors)
                         const colors = [
                           COLOR_SCHEME.success,   // Premium customers - Green
                           COLOR_SCHEME.primary,   // Regular customers - Blue  
-                          COLOR_SCHEME.info,      // New customers - Cyan
-                          COLOR_SCHEME.warning,   // Occasional customers - Orange
-                          COLOR_SCHEME.secondary  // Other segments - Purple
+                          COLOR_SCHEME.warning,   // New customers - Orange
+                          COLOR_SCHEME.danger,    // Occasional customers - Red
                         ];
                         return (
                           <Cell 
@@ -710,8 +691,8 @@ const ReportsEnhanced: React.FC = () => {
                   <br />
                   Customer Types: <span style={{ color: COLOR_SCHEME.success }}>● Premium</span> 
                   <span style={{ color: COLOR_SCHEME.primary }}> ● Regular</span> 
-                  <span style={{ color: COLOR_SCHEME.info }}> ● New</span> 
-                  <span style={{ color: COLOR_SCHEME.warning }}> ● Occasional</span>
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● New</span> 
+                  <span style={{ color: COLOR_SCHEME.danger }}> ● Occasional</span>
                 </div>
               </div>
             </>
@@ -743,8 +724,9 @@ const ReportsEnhanced: React.FC = () => {
                       wrapperStyle={{ paddingTop: '20px' }}
                       iconType="rect"
                       formatter={(value: string) => 
-                        value.includes('Revenue') ? `${value} (Green: Income)` :
-                        value.includes('Expenses') ? `${value} (Red: Costs)` : value
+                        value.includes('Revenue') ? `${value} - 🟢Green=Income` :
+                        value.includes('Expenses') ? `${value} - 🔴Red=Costs` : 
+                        `${value} - Color Guide: 🟢Green=Income, 🔴Red=Costs`
                       }
                     />
                     <Bar 
@@ -790,7 +772,7 @@ const ReportsEnhanced: React.FC = () => {
                     <Legend 
                       wrapperStyle={{ paddingTop: '20px' }}
                       iconType="rect"
-                      formatter={(value: string) => `${value} (High Priority: Red, Medium: Orange, Low: Green)`}
+                      formatter={(value: string) => `${value} - Color Guide: 🔴Red=High Priority, 🟠Orange=Medium, 🔵Blue=Regular, 🟢Green=Low Priority`}
                     />
                     <Bar 
                       dataKey="amount" 
@@ -799,14 +781,12 @@ const ReportsEnhanced: React.FC = () => {
                       strokeWidth={1}
                     >
                       {expenseCategories.map((entry, index) => {
-                        // Expense category color coding
+                        // Expense category color coding (using only 4 colors)
                         const expenseColors = [
-                          COLOR_SCHEME.danger,    // High expenses - Red
-                          COLOR_SCHEME.warning,   // Medium expenses - Orange  
-                          COLOR_SCHEME.info,      // Regular expenses - Cyan
-                          COLOR_SCHEME.primary,   // Operational expenses - Blue
-                          COLOR_SCHEME.secondary, // Other expenses - Purple
-                          COLOR_SCHEME.neutral    // Miscellaneous - Gray
+                          COLOR_SCHEME.danger,    // High priority expenses - Red
+                          COLOR_SCHEME.warning,   // Medium priority expenses - Orange  
+                          COLOR_SCHEME.primary,   // Regular expenses - Blue
+                          COLOR_SCHEME.success,   // Low priority expenses - Green
                         ];
                         return (
                           <Cell 
@@ -824,8 +804,8 @@ const ReportsEnhanced: React.FC = () => {
                   <br />
                   Categories: <span style={{ color: COLOR_SCHEME.danger }}>● High Priority</span> 
                   <span style={{ color: COLOR_SCHEME.warning }}> ● Medium</span> 
-                  <span style={{ color: COLOR_SCHEME.info }}> ● Regular</span> 
-                  <span style={{ color: COLOR_SCHEME.primary }}> ● Operational</span>
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Regular</span> 
+                  <span style={{ color: COLOR_SCHEME.success }}> ● Low Priority</span>
                 </div>
               </div>
               <div className="chart-container">
@@ -839,7 +819,7 @@ const ReportsEnhanced: React.FC = () => {
                     <Legend 
                       wrapperStyle={{ paddingTop: '20px' }}
                       iconType="rect"
-                      formatter={(value: string) => `${value} (Positive: Green, Negative: Red)`}
+                      formatter={(value: string) => `${value} - Color Guide: 🟢Green=Positive Flow, 🔴Red=Negative Flow`}
                     />
                     <Bar 
                       dataKey="net" 
@@ -849,7 +829,7 @@ const ReportsEnhanced: React.FC = () => {
                     >
                       {cashFlow.map((entry, index) => {
                         // Cash flow color coding based on positive/negative
-                        let color = COLOR_SCHEME.neutral;
+                        let color = COLOR_SCHEME.primary;
                         if (entry.net > 0) {
                           color = entry.net > 50000 ? COLOR_SCHEME.success : COLOR_SCHEME.primary; // Positive flow
                         } else {
@@ -901,8 +881,9 @@ const ReportsEnhanced: React.FC = () => {
                       wrapperStyle={{ paddingTop: '20px' }}
                       iconType="rect"
                       formatter={(value: string) => 
-                        value.includes('Collected') ? `${value} (Green: Tax Revenue)` :
-                        value.includes('Paid') ? `${value} (Blue: Tax Payments)` : value
+                        value.includes('Collected') ? `${value} - 🟢Green=Tax Revenue` :
+                        value.includes('Paid') ? `${value} - 🔵Blue=Tax Payments` : 
+                        `${value} - Color Guide: 🟢Green=Revenue, 🔵Blue=Payments`
                       }
                     />
                     <Bar 
@@ -944,7 +925,7 @@ const ReportsEnhanced: React.FC = () => {
                     <Legend 
                       wrapperStyle={{ paddingTop: '20px' }}
                       iconType="rect"
-                      formatter={(value: string) => `${value} (0%: Green, 5%: Blue, 12%: Cyan, 18%: Orange, 28%: Red)`}
+                      formatter={(value: string) => `${value} - Color Guide: 🟢Green=0%, 🔵Blue=5%, 🟠Orange=12-18%, 🔴Red=28%`}
                     />
                     <Bar 
                       dataKey="amount" 
@@ -953,13 +934,12 @@ const ReportsEnhanced: React.FC = () => {
                       strokeWidth={1}
                     >
                       {rateDistribution.map((entry, index) => {
-                        // GST rate color coding
+                        // GST rate color coding (using only 4 colors)
                         const rate = parseFloat(entry.rate.replace('%', ''));
-                        let color = COLOR_SCHEME.neutral;
+                        let color = COLOR_SCHEME.primary;
                         if (rate === 0) color = COLOR_SCHEME.success;      // 0% - Green (Exempt)
                         else if (rate <= 5) color = COLOR_SCHEME.primary;  // 5% - Blue (Low rate)
-                        else if (rate <= 12) color = COLOR_SCHEME.info;    // 12% - Cyan (Medium rate)  
-                        else if (rate <= 18) color = COLOR_SCHEME.warning; // 18% - Orange (High rate)
+                        else if (rate <= 18) color = COLOR_SCHEME.warning; // 12%/18% - Orange (Medium rate)  
                         else color = COLOR_SCHEME.danger;                  // 28% - Red (Highest rate)
                         
                         return (
@@ -976,8 +956,7 @@ const ReportsEnhanced: React.FC = () => {
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
                   GST Rates: <span style={{ color: COLOR_SCHEME.success }}>● 0% (Exempt)</span> 
                   <span style={{ color: COLOR_SCHEME.primary }}> ● 5% (Low)</span> 
-                  <span style={{ color: COLOR_SCHEME.info }}> ● 12% (Medium)</span> 
-                  <span style={{ color: COLOR_SCHEME.warning }}> ● 18% (High)</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● 12-18% (Medium-High)</span> 
                   <span style={{ color: COLOR_SCHEME.danger }}> ● 28% (Highest)</span>
                 </div>
               </div>
@@ -1000,7 +979,7 @@ const ReportsEnhanced: React.FC = () => {
                     <Legend 
                       wrapperStyle={{ paddingTop: '20px' }}
                       iconType="rect"
-                      formatter={(value: string) => `${value} (Excellent: Green, Good: Blue, Average: Orange, Poor: Red)`}
+                      formatter={(value: string) => `${value} - Color Guide: 🟢Green=Excellent(90%+), 🔵Blue=Good(75%+), 🟠Orange=Satisfactory(60%+), 🔴Red=Critical(<60%)`}
                     />
                     <Bar 
                       dataKey="score" 
@@ -1009,12 +988,11 @@ const ReportsEnhanced: React.FC = () => {
                       strokeWidth={1}
                     >
                       {compliance.map((entry, index) => {
-                        // Compliance score color coding
-                        let color = COLOR_SCHEME.neutral;
+                        // Compliance score color coding (using only 4 colors)
+                        let color = COLOR_SCHEME.primary;
                         if (entry.score >= 90) color = COLOR_SCHEME.success;      // Excellent - Green
                         else if (entry.score >= 75) color = COLOR_SCHEME.primary; // Good - Blue
-                        else if (entry.score >= 60) color = COLOR_SCHEME.info;    // Satisfactory - Cyan
-                        else if (entry.score >= 40) color = COLOR_SCHEME.warning; // Needs Improvement - Orange  
+                        else if (entry.score >= 60) color = COLOR_SCHEME.warning; // Satisfactory - Orange
                         else color = COLOR_SCHEME.danger;                         // Critical - Red
                         
                         return (
@@ -1033,9 +1011,8 @@ const ReportsEnhanced: React.FC = () => {
                   <br />
                   Compliance Levels: <span style={{ color: COLOR_SCHEME.success }}>● Excellent (90%+)</span> 
                   <span style={{ color: COLOR_SCHEME.primary }}> ● Good (75%+)</span> 
-                  <span style={{ color: COLOR_SCHEME.info }}> ● Satisfactory (60%+)</span> 
-                  <span style={{ color: COLOR_SCHEME.warning }}> ● Needs Improvement (40%+)</span> 
-                  <span style={{ color: COLOR_SCHEME.danger }}> ● Critical (&lt;40%)</span>
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Satisfactory (60%+)</span> 
+                  <span style={{ color: COLOR_SCHEME.danger }}> ● Critical (&lt;60%)</span>
                 </div>
               </div>
             </>

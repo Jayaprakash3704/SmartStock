@@ -19,15 +19,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddProduct }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Meaningful color scheme for different data types
+  // Simplified 4-color scheme: Red, Green, Blue, Orange
   const COLOR_SCHEME = {
-    success: '#10b981',      // Green - Good performance, high values
-    warning: '#f59e0b',      // Orange - Medium performance, caution
-    danger: '#ef4444',       // Red - Low performance, urgent attention
-    primary: '#667eea',      // Blue - Primary data, revenue
-    secondary: '#764ba2',    // Purple - Secondary data, targets
-    info: '#06b6d4',         // Cyan - Information, neutral data
-    neutral: '#6b7280'       // Gray - Baseline, average
+    success: '#22c55e',      // Green - Good performance, high values, positive
+    warning: '#f97316',      // Orange - Medium performance, caution, moderate
+    danger: '#ef4444',       // Red - Low performance, urgent attention, negative
+    primary: '#3b82f6',      // Blue - Primary data, normal, neutral
   };
 
   // Enhanced color palette for better visual hierarchy
@@ -183,7 +180,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddProduct }) => {
             />
             <Legend
               iconType="rect"
-              formatter={() => 'Sales Performance (High: Green, Average: Orange, Low: Red)'}
+              formatter={() => 'Sales Performance - Color Guide: 🟢Green=High Sales, 🟠Orange=Medium Sales, 🔴Red=Low Sales'}
             />
             <Bar 
               dataKey="sales" 
@@ -227,7 +224,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddProduct }) => {
             <Tooltip formatter={(value: number, name: string) => [`${value} items`, name]} />
             <Legend
               iconType="rect"
-              formatter={() => 'Category Performance (High: Green, Medium: Orange, Low: Red)'}
+              formatter={() => 'Category Performance - Color Guide: 🟢Green=High Volume, 🟠Orange=Medium Volume, 🔴Red=Low Volume'}
             />
             <Bar 
               dataKey="value" 

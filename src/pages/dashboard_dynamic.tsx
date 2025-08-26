@@ -20,15 +20,12 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import { useDashboard, useNotifications, usePerformanceMonitor } from '../hooks/useDashboard';
 import { formatIndianNumber } from '../utils/helpers';
 
-// Meaningful color scheme for different data types
+// Simplified 4-color scheme: Red, Green, Blue, Orange
 const COLOR_SCHEME = {
-  success: '#10b981',      // Green - Good performance, high values
-  warning: '#f59e0b',      // Orange - Medium performance, caution
-  danger: '#ef4444',       // Red - Low performance, urgent attention
-  primary: '#667eea',      // Blue - Primary data, revenue
-  secondary: '#764ba2',    // Purple - Secondary data, targets
-  info: '#06b6d4',         // Cyan - Information, neutral data
-  neutral: '#6b7280'       // Gray - Baseline, average
+  success: '#22c55e',      // Green - Good performance, high values, positive
+  warning: '#f97316',      // Orange - Medium performance, caution, moderate
+  danger: '#ef4444',       // Red - Low performance, urgent attention, negative
+  primary: '#3b82f6',      // Blue - Primary data, normal, neutral
 };
 
 const Dashboard: React.FC = () => {
@@ -467,7 +464,7 @@ const Dashboard: React.FC = () => {
                   />
                   <Legend
                     iconType="rect"
-                    formatter={() => 'Category Performance (High: Green, Medium: Orange, Low: Red)'}
+                    formatter={() => 'Category Performance - Color Guide: 🟢Green=High Volume, 🟠Orange=Medium Volume, 🔴Red=Low Volume'}
                   />
                   <Bar 
                     dataKey="value" 
@@ -512,7 +509,7 @@ const Dashboard: React.FC = () => {
                   />
                   <Legend
                     iconType="rect"
-                    formatter={() => 'Stock Status (High: Green, Medium: Orange, Low: Red)'}
+                    formatter={() => 'Stock Status - Color Guide: 🟢Green=High Stock, 🟠Orange=Medium Stock, 🔴Red=Low Stock'}
                   />
                   <Bar 
                     dataKey="value" 
