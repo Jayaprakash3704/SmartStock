@@ -7,7 +7,7 @@ import { ThemeProvider } from './contexts/ThemeContextNew';
 import { notificationManager } from './services/notificationManager';
 import { isFirebaseEnabled } from './services/firebase';
 import { migrateLocalProductsToFirestore } from './services/migration';
-import { initializeMockData } from './services/mockDataInitializer';
+import { initializeDemoData } from './services/mockDataInitializer';
 import { Layout } from './components/ui/Layout';
 import { LoadingPage } from './components/ui/Loading';
 import './styles/globals.css';
@@ -42,16 +42,16 @@ const App: React.FC = () => {
   // Initialize dynamic features when user logs in
   useEffect(() => {
     if (user) {
-      // Initialize mock data for demonstration
+      // Initialize demo data for demonstration
       const initData = async () => {
         try {
-          await initializeMockData();
+          await initializeDemoData();
           notificationManager.showSuccess(
             '🎭 Demo Data Ready!',
             'Comprehensive product catalog loaded for demonstration'
           );
         } catch (error) {
-          console.error('Failed to initialize mock data:', error);
+          console.error('Failed to initialize demo data:', error);
         }
       };
 

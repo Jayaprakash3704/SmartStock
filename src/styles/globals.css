@@ -169,18 +169,19 @@ body::after {
     padding-right: 1rem;
 }
 
-/* Enhanced page container for normal scrolling behavior */
+/* Enhanced page container for better scrolling and responsive design */
 .page-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px 16px;
     width: 100%;
-    height: auto;
-    min-height: auto;
-    overflow: visible;
+    min-height: calc(100vh - 80px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
 }
 
-/* Fixed page header styling - No sticky behavior */
+/* Enhanced page header styling with better responsive behavior */
 .page-header {
     display: flex;
     align-items: flex-start;
@@ -190,10 +191,13 @@ body::after {
     gap: 16px;
     padding: 16px 0;
     border-bottom: 1px solid var(--border);
-    position: relative;
-    background: transparent;
-    z-index: 1;
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 10;
     border-radius: 12px;
+    margin-bottom: 24px;
 }
 
 .page-title {

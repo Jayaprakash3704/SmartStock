@@ -36,13 +36,7 @@ const Inventory: React.FC = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    try {
-      await fetchProducts();
-    } catch (error) {
-      console.error('Error refreshing data:', error);
-    } finally {
-      setRefreshing(false);
-    }
+    await fetchProducts();
   };
 
   const handleStockUpdate = async (productId: string, newQuantity: number) => {
@@ -111,12 +105,7 @@ const Inventory: React.FC = () => {
   }
 
   return (
-    <div className="page-container" style={{ 
-      padding: '20px',
-      minHeight: 'auto',
-      height: 'auto',
-      overflow: 'visible'
-    }}>
+    <div>
       {/* Enhanced Header with Refresh */}
       <motion.div 
         style={{ marginBottom: '32px' }}
@@ -200,162 +189,59 @@ const Inventory: React.FC = () => {
         </div>
       </div>
 
-      {/* Enhanced Inventory Management Section */}
-      <div className="glass-card" style={{ 
-        background: 'rgba(255, 255, 255, 0.95)', 
-        backdropFilter: 'blur(10px)',
-        borderRadius: '16px',
-        padding: '24px',
-        marginBottom: '24px',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-      }}>
-        {/* Enhanced Search & Filter Controls */}
+      {/* Inventory Management */}
+      <div className="glass-card">
+        {/* Controls */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
-          alignItems: 'flex-start', 
+          alignItems: 'center', 
           marginBottom: '24px',
           flexWrap: 'wrap',
-          gap: '16px',
-          padding: '16px',
-          background: 'rgba(102, 126, 234, 0.05)',
-          borderRadius: '12px',
-          border: '1px solid rgba(102, 126, 234, 0.1)'
+          gap: '16px'
         }}>
-          {/* Search and Category Section */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '16px', 
-            flex: 1, 
-            flexWrap: 'wrap',
-            minWidth: '300px'
-          }}>
-            <div style={{ 
-              position: 'relative',
-              flex: 1, 
-              minWidth: '250px',
-              marginBottom: '8px'
-            }}>
-              <div style={{
-                position: 'absolute',
-                left: '12px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                fontSize: '18px',
-                color: '#6b7280',
-                zIndex: 2
-              }}>🔍</div>
+          <div style={{ display: 'flex', gap: '16px', flex: 1, flexWrap: 'wrap' }}>
+            <div className="search-container" style={{ flex: 1, minWidth: '250px' }}>
+              <div className="search-icon">🔍</div>
               <input
                 type="text"
-                placeholder="Search by product name, SKU, or category..."
+                className="search-input"
+                placeholder="Search inventory..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '14px 16px 14px 48px',
-                  border: '2px solid #e5e7eb',
-                  borderRadius: '10px',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  background: 'white',
-                  transition: 'all 0.2s ease',
-                  outline: 'none',
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = '#667eea';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = '#e5e7eb';
-                  e.target.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
-                }}
               />
             </div>
             <select
+              className="modern-select"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              style={{ 
-                minWidth: '180px', 
-                padding: '14px 16px',
-                border: '2px solid #e5e7eb',
-                borderRadius: '10px',
-                fontSize: '14px',
-                fontWeight: '500',
-                background: 'white',
-                cursor: 'pointer',
-                outline: 'none',
-                transition: 'all 0.2s ease'
-              }}
+              style={{ minWidth: '150px', marginBottom: '0' }}
             >
-              <option value="">🏷️ All Categories</option>
+              <option value="">All Categories</option>
               {categories.map(category => (
-                <option key={category} value={category}>📂 {category}</option>
+                <option key={category} value={category}>{category}</option>
               ))}
             </select>
           </div>
           
-          {/* Filter Buttons Section */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '8px', 
-            flexWrap: 'wrap',
-            alignItems: 'center'
-          }}>
-            <span style={{ 
-              fontSize: '12px', 
-              fontWeight: '600', 
-              color: '#6b7280',
-              marginRight: '8px',
-              whiteSpace: 'nowrap'
-            }}>
-              Filter by:
-            </span>
+          <div style={{ display: 'flex', gap: '8px' }}>
             <button
               className={filter === 'all' ? 'btn-primary' : 'btn-secondary'}
               onClick={() => setFilter('all')}
-              style={{
-                padding: '8px 16px',
-                fontSize: '13px',
-                fontWeight: '600',
-                borderRadius: '8px',
-                transition: 'all 0.2s ease',
-                border: 'none',
-                cursor: 'pointer'
-              }}
             >
-              📦 All Items
+              All Items
             </button>
             <button
               className={filter === 'low' ? 'btn-warning' : 'btn-secondary'}
               onClick={() => setFilter('low')}
-              style={{
-                padding: '8px 16px',
-                fontSize: '13px',
-                fontWeight: '600',
-                borderRadius: '8px',
-                transition: 'all 0.2s ease',
-                border: 'none',
-                cursor: 'pointer'
-              }}
             >
-              ⚠️ Low Stock
+              Low Stock
             </button>
             <button
               className={filter === 'good' ? 'btn-success' : 'btn-secondary'}
               onClick={() => setFilter('good')}
-              style={{
-                padding: '8px 16px',
-                fontSize: '13px',
-                fontWeight: '600',
-                borderRadius: '8px',
-                transition: 'all 0.2s ease',
-                border: 'none',
-                cursor: 'pointer'
-              }}
             >
-              ✅ In Stock
+              In Stock
             </button>
           </div>
         </div>
@@ -393,106 +279,29 @@ const Inventory: React.FC = () => {
           )}
         </div>
 
-        {/* Enhanced Inventory Table */}
+        {/* Inventory Table */}
         {filteredProducts.length > 0 ? (
-          <div style={{ 
-            marginTop: '24px',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            border: '1px solid #e5e7eb',
-            background: 'white',
-            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-          }}>
-            <div style={{ 
-              overflowX: 'auto',
-              overflowY: 'visible'
-            }}>
-              <table style={{ 
-                width: '100%', 
-                borderCollapse: 'collapse',
-                fontSize: '14px'
-              }}>
-                <thead style={{ 
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  position: 'relative',
-                  zIndex: 1
-                }}>
-                  <tr>
-                    <th style={{ 
-                      padding: '16px 12px', 
-                      textAlign: 'left', 
-                      fontWeight: '600',
-                      borderBottom: '2px solid rgba(255,255,255,0.2)'
-                    }}>📦 Product</th>
-                    <th style={{ 
-                      padding: '16px 12px', 
-                      textAlign: 'left', 
-                      fontWeight: '600',
-                      borderBottom: '2px solid rgba(255,255,255,0.2)'
-                    }}>🏷️ Category</th>
-                    <th style={{ 
-                      padding: '16px 12px', 
-                      textAlign: 'center', 
-                      fontWeight: '600',
-                      borderBottom: '2px solid rgba(255,255,255,0.2)'
-                    }}>📊 Current Stock</th>
-                    <th style={{ 
-                      padding: '16px 12px', 
-                      textAlign: 'center', 
-                      fontWeight: '600',
-                      borderBottom: '2px solid rgba(255,255,255,0.2)'
-                    }}>⚠️ Min Level</th>
-                    <th style={{ 
-                      padding: '16px 12px', 
-                      textAlign: 'center', 
-                      fontWeight: '600',
-                      borderBottom: '2px solid rgba(255,255,255,0.2)'
-                    }}>🚦 Status</th>
-                    <th style={{ 
-                      padding: '16px 12px', 
-                      textAlign: 'right', 
-                      fontWeight: '600',
-                      borderBottom: '2px solid rgba(255,255,255,0.2)'
-                    }}>💰 Unit Price</th>
-                    <th style={{ 
-                      padding: '16px 12px', 
-                      textAlign: 'right', 
-                      fontWeight: '600',
-                      borderBottom: '2px solid rgba(255,255,255,0.2)'
-                    }}>💎 Stock Value</th>
-                    <th style={{ 
-                      padding: '16px 12px', 
-                      textAlign: 'center', 
-                      fontWeight: '600',
-                      borderBottom: '2px solid rgba(255,255,255,0.2)'
-                    }}>⚡ Quick Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.map((product, index) => {
-                    const status = getStockStatus(product);
-                    const isUpdating = updatingProduct === product.id;
-                    
-                    return (
-                      <tr 
-                        key={product.id}
-                        style={{
-                          backgroundColor: index % 2 === 0 ? '#f9fafb' : 'white',
-                          transition: 'all 0.2s ease',
-                          borderBottom: '1px solid #e5e7eb'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.backgroundColor = '#f3f4f6';
-                          e.currentTarget.style.transform = 'scale(1.01)';
-                          e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#f9fafb' : 'white';
-                          e.currentTarget.style.transform = 'scale(1)';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
-                      >
+          <div style={{ overflowX: 'auto' }}>
+            <table className="modern-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Current Stock</th>
+                  <th>Min Level</th>
+                  <th>Status</th>
+                  <th>Unit Price</th>
+                  <th>Stock Value</th>
+                  <th>Quick Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProducts.map((product) => {
+                  const status = getStockStatus(product);
+                  const isUpdating = updatingProduct === product.id;
+                  
+                  return (
+                    <tr key={product.id}>
                       <td>
                         <div>
                           <div style={{ fontWeight: '600', marginBottom: '4px' }}>{product.name}</div>
@@ -590,7 +399,6 @@ const Inventory: React.FC = () => {
               </tbody>
             </table>
           </div>
-        </div>
         ) : (
           <div style={{ 
             textAlign: 'center', 

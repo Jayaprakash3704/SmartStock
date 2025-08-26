@@ -6,7 +6,7 @@ import { notificationManager } from '../services/notificationManager';
 import { AppSettings, BusinessSettings, CurrencySettings, INDIAN_CURRENCY } from '../types';
 import { useCurrency, AVAILABLE_CURRENCIES } from '../contexts/CurrencyContext';
 import { useTheme } from '../contexts/ThemeContextNew';
-import { initializeMockData, addExtendedMockData } from '../services/mockDataInitializer';
+import { initializeDemoData } from '../services/mockDataInitializer';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -545,8 +545,8 @@ const Settings: React.FC = () => {
                       onClick={async () => {
                         setIsInitializingData(true);
                         try {
-                          await initializeMockData();
-                          notificationManager.showSuccess('Demo Data', 'Comprehensive demo data loaded successfully!');
+                          await initializeDemoData();
+                          notificationManager.showSuccess('Demo Data', 'Minimal demo data loaded successfully!');
                         } catch (error) {
                           notificationManager.showError('Demo Data', 'Failed to load demo data');
                         } finally {
@@ -559,34 +559,7 @@ const Settings: React.FC = () => {
                     </button>
                   </div>
                   <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>
-                    Load comprehensive demo data with 28+ products across 10+ categories for demonstration
-                  </p>
-                </div>
-
-                <div className="glass-card" style={{ padding: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <h4 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>Extended Demo Data</h4>
-                    <button 
-                      className="btn-secondary" 
-                      style={{ fontSize: '12px', padding: '6px 12px' }}
-                      onClick={async () => {
-                        setIsInitializingData(true);
-                        try {
-                          await addExtendedMockData();
-                          notificationManager.showSuccess('Extended Data', 'Additional demo products added!');
-                        } catch (error) {
-                          notificationManager.showError('Extended Data', 'Failed to add extended data');
-                        } finally {
-                          setIsInitializingData(false);
-                        }
-                      }}
-                      disabled={isInitializingData}
-                    >
-                      {isInitializingData ? 'Adding...' : 'Add More Products'}
-                    </button>
-                  </div>
-                  <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>
-                    Add even more variety to the product catalog for extensive demonstrations
+                    Load minimal demo data with 5 basic products for application demonstration
                   </p>
                 </div>
 
