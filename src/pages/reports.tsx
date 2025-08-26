@@ -87,21 +87,22 @@ const CHART_COLORS = [
   '#3b82f6', '#1d4ed8', '#1e40af', '#60a5fa', '#93c5fd', '#dbeafe'
 ];
 
-// Meaningful color scheme for different data types
+// Enhanced color scheme with semantic meanings
 const COLOR_SCHEME = {
-  success: '#22c55e',      // Green - Good performance, high values, positive
-  warning: '#f97316',      // Orange - Medium performance, caution, moderate
-  danger: '#ef4444',       // Red - Low performance, urgent attention, negative
-  primary: '#3b82f6',      // Blue - Primary data, normal, neutral
+  success: '#10b981',      // Emerald Green - High performance, good values, positive trends
+  warning: '#f59e0b',      // Amber Orange - Medium performance, caution, moderate values  
+  danger: '#ef4444',       // Red - Low performance, urgent attention, poor values
+  primary: '#3b82f6',      // Blue - Primary data, normal values, neutral information
+  info: '#06b6d4',         // Cyan - Information, secondary data
 };
 
-// Simplified 4-color pattern: Red, Green, Blue, Orange
+// Robust 4-color pattern ensuring all bars are colored
 const getChartColors = (theme: 'light' | 'dark') => {
   return [
-    COLOR_SCHEME.primary,    // Blue - Primary/Normal
-    COLOR_SCHEME.success,    // Green - Good/High  
+    COLOR_SCHEME.primary,    // Blue - Primary/Normal values
+    COLOR_SCHEME.success,    // Green - High/Good performance  
     COLOR_SCHEME.warning,    // Orange - Medium/Caution
-    COLOR_SCHEME.danger,     // Red - Low/Poor
+    COLOR_SCHEME.danger,     // Red - Low/Poor performance
   ];
 };
 
@@ -507,18 +508,26 @@ const ReportsEnhanced: React.FC = () => {
                       strokeWidth={1}
                     >
                       {series.map((entry, index) => {
-                        // Color coding based on value performance
+                        // Color coding based on value performance - CORRECTED LOGIC
                         let color = COLOR_SCHEME.primary;
-                        if (index === 0) color = COLOR_SCHEME.success;      // Top performer - Green
-                        else if (index === 1) color = COLOR_SCHEME.primary; // Second - Blue  
-                        else if (index === 2) color = COLOR_SCHEME.warning; // Third - Orange
-                        else if (index >= series.length - 2) color = COLOR_SCHEME.danger; // Low performers - Red
+                        const value = entry.value || 0;
+                        const maxValue = Math.max(...series.map(s => s.value || 0));
+                        const minValue = Math.min(...series.map(s => s.value || 0));
+                        const valueRange = maxValue - minValue;
+                        const normalizedValue = valueRange > 0 ? (value - minValue) / valueRange : 0.5;
+                        
+                        // Proper color assignment: Higher values = Green, Lower values = Red
+                        if (normalizedValue >= 0.75) color = COLOR_SCHEME.success;        // Top 25% - Green (High)
+                        else if (normalizedValue >= 0.5) color = COLOR_SCHEME.primary;   // 50-75% - Blue (Good)  
+                        else if (normalizedValue >= 0.25) color = COLOR_SCHEME.warning;  // 25-50% - Orange (Medium)
+                        else color = COLOR_SCHEME.danger;                                // Bottom 25% - Red (Low)
                         
                         return (
                           <Cell 
                             key={`cell-${index}`} 
                             fill={color}
                             stroke={color}
+                            strokeWidth={2}
                           />
                         );
                       })}
@@ -610,15 +619,16 @@ const ReportsEnhanced: React.FC = () => {
                       strokeWidth={1}
                     >
                       {productPerformance.map((entry, index) => {
-                        // Performance-based color coding
+                        // Performance-based color coding - CORRECTED LOGIC
                         let color = COLOR_SCHEME.primary;
                         const maxSales = Math.max(...productPerformance.map(p => p.sales));
-                        const performance = entry.sales / maxSales;
+                        const performance = maxSales > 0 ? entry.sales / maxSales : 0;
                         
-                        if (performance > 0.8) color = COLOR_SCHEME.success;        // Excellent - Green
-                        else if (performance > 0.6) color = COLOR_SCHEME.primary;  // Good - Blue
-                        else if (performance > 0.4) color = COLOR_SCHEME.warning;  // Average - Orange
-                        else color = COLOR_SCHEME.danger;                          // Poor - Red
+                        // Proper performance color assignment: Higher sales = Green, Lower sales = Red
+                        if (performance >= 0.8) color = COLOR_SCHEME.success;        // 80%+ - Green (Excellent)
+                        else if (performance >= 0.6) color = COLOR_SCHEME.primary;   // 60-80% - Blue (Good)
+                        else if (performance >= 0.4) color = COLOR_SCHEME.warning;   // 40-60% - Orange (Average)
+                        else color = COLOR_SCHEME.danger;                            // <40% - Red (Poor)
                         
                         return (
                           <Cell 

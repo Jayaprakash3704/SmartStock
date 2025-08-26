@@ -130,6 +130,9 @@ body {
     color: var(--text);
     min-height: 100vh;
     position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
 }
 
 /* Add subtle background pattern */
@@ -166,22 +169,35 @@ body::after {
     padding-right: 1rem;
 }
 
-/* Page container for consistent spacing */
+/* Enhanced page container for better scrolling and responsive design */
 .page-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 16px;
+    padding: 20px 16px;
     width: 100%;
+    min-height: calc(100vh - 80px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
 }
 
-/* Page header styling */
+/* Enhanced page header styling with better responsive behavior */
 .page-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     margin-bottom: 32px;
     flex-wrap: wrap;
     gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    border-radius: 12px;
+    margin-bottom: 24px;
 }
 
 .page-title {
@@ -2023,6 +2039,72 @@ body::after {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     font-weight: 600;
+}
+
+.gradient-text-warning {
+    background: var(--gradient-warning);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 600;
+}
+
+/* Custom scrollbar styles for better UX */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(241, 245, 249, 0.5);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: scale(1.1);
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #667eea rgba(241, 245, 249, 0.5);
+}
+
+/* Enhanced responsive design */
+@media (max-width: 768px) {
+    .page-container {
+        padding: 16px 12px;
+        min-height: calc(100vh - 60px);
+    }
+    
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 12px 0;
+    }
+    
+    .chart-container {
+        height: 250px !important;
+        margin-bottom: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-container {
+        padding: 12px 8px;
+    }
+    
+    .chart-container {
+        height: 200px !important;
+    }
 }
 
 .gradient-text-warning {

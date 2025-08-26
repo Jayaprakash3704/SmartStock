@@ -20,12 +20,13 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import { useDashboard, useNotifications, usePerformanceMonitor } from '../hooks/useDashboard';
 import { formatIndianNumber } from '../utils/helpers';
 
-// Simplified 4-color scheme: Red, Green, Blue, Orange
+// Enhanced 4-color scheme with better semantic meanings
 const COLOR_SCHEME = {
-  success: '#22c55e',      // Green - Good performance, high values, positive
-  warning: '#f97316',      // Orange - Medium performance, caution, moderate
-  danger: '#ef4444',       // Red - Low performance, urgent attention, negative
-  primary: '#3b82f6',      // Blue - Primary data, normal, neutral
+  success: '#10b981',      // Emerald Green - High performance, good values
+  warning: '#f59e0b',      // Amber Orange - Medium performance, caution
+  danger: '#ef4444',       // Red - Low performance, urgent attention  
+  primary: '#3b82f6',      // Blue - Primary data, normal values
+  info: '#06b6d4',         // Cyan - Information, secondary data
 };
 
 const Dashboard: React.FC = () => {
@@ -476,9 +477,10 @@ const Dashboard: React.FC = () => {
                       <Cell 
                         key={`cell-${index}`} 
                         fill={
-                          entry.value > 20 ? COLOR_SCHEME.success :  // High category count
-                          entry.value > 10 ? COLOR_SCHEME.warning :  // Medium category count
-                          COLOR_SCHEME.danger                        // Low category count
+                          entry.value >= 25 ? COLOR_SCHEME.success :  // High category count - Green
+                          entry.value >= 15 ? COLOR_SCHEME.primary :  // Good category count - Blue
+                          entry.value >= 8 ? COLOR_SCHEME.warning :   // Medium category count - Orange
+                          COLOR_SCHEME.danger                         // Low category count - Red
                         }
                       />
                     ))}
@@ -521,9 +523,10 @@ const Dashboard: React.FC = () => {
                       <Cell 
                         key={`cell-${index}`} 
                         fill={
-                          entry.value > 50 ? COLOR_SCHEME.success :  // High stock
-                          entry.value > 20 ? COLOR_SCHEME.warning :  // Medium stock
-                          COLOR_SCHEME.danger                        // Low stock
+                          entry.value >= 60 ? COLOR_SCHEME.success :  // High stock - Green (Good)
+                          entry.value >= 30 ? COLOR_SCHEME.primary :  // Good stock - Blue (Normal)
+                          entry.value >= 15 ? COLOR_SCHEME.warning :  // Medium stock - Orange (Caution)
+                          COLOR_SCHEME.danger                         // Low stock - Red (Danger)
                         }
                       />
                     ))}

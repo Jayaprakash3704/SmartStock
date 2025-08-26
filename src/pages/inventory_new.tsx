@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { productsAPI } from '../services/api';
 import { Product } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
+import { motion } from 'framer-motion';
 
 const Inventory: React.FC = () => {
   const { formatCurrency } = useCurrency();
@@ -11,6 +12,7 @@ const Inventory: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [updatingProduct, setUpdatingProduct] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchProducts();
@@ -18,6 +20,7 @@ const Inventory: React.FC = () => {
 
   const fetchProducts = async () => {
     setIsLoading(true);
+    setRefreshing(true);
     try {
       const response = await productsAPI.getAll();
       if (response.success) {
@@ -27,7 +30,13 @@ const Inventory: React.FC = () => {
       console.error('Error fetching products:', error);
     } finally {
       setIsLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchProducts();
   };
 
   const handleStockUpdate = async (productId: string, newQuantity: number) => {
@@ -97,25 +106,64 @@ const Inventory: React.FC = () => {
 
   return (
     <div>
-      {/* Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <h1 style={{ 
-          fontSize: '32px', 
-          fontWeight: 'bold', 
-          color: 'white',
-          textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
-          marginBottom: '8px'
+      {/* Enhanced Header with Refresh */}
+      <motion.div 
+        style={{ marginBottom: '32px' }}
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-end',
+          flexWrap: 'wrap',
+          gap: '16px'
         }}>
-          Inventory Management
-        </h1>
-        <p style={{ 
-          color: 'rgba(255, 255, 255, 0.8)', 
-          fontSize: '16px',
-          textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
-        }}>
-          Monitor and update your stock levels
-        </p>
-      </div>
+          <div>
+            <h1 style={{ 
+              fontSize: '32px', 
+              fontWeight: 'bold', 
+              color: 'white',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+              marginBottom: '8px'
+            }}>
+              📦 Inventory Management
+            </h1>
+            <p style={{ 
+              color: 'rgba(255, 255, 255, 0.8)', 
+              fontSize: '16px',
+              textShadow: '0 1px 2px rgba(0, 0, 0, 0.2)'
+            }}>
+              Monitor and update your stock levels in real-time
+            </p>
+          </div>
+          <motion.button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="btn-secondary"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '12px 20px',
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: 'white',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: refreshing ? 'not-allowed' : 'pointer',
+              opacity: refreshing ? 0.7 : 1
+            }}
+            whileHover={{ scale: refreshing ? 1 : 1.05 }}
+            whileTap={{ scale: refreshing ? 1 : 0.95 }}
+          >
+            <span style={{ fontSize: '16px' }}>🔄</span>
+            {refreshing ? 'Refreshing...' : 'Refresh Data'}
+          </motion.button>
+        </div>
+      </motion.div>
 
       {/* Statistics Cards */}
       <div className="stats-grid">

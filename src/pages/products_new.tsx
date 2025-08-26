@@ -288,8 +288,16 @@ const Products: React.FC = () => {
           <button
             className="btn-primary"
             onClick={() => setIsAddingProduct(true)}
+            style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px',
+              padding: '12px 20px',
+              fontSize: '14px',
+              fontWeight: '600'
+            }}
           >
-            + Add Product
+            ➕ Add New Product
           </button>
         </div>
 
@@ -347,12 +355,6 @@ const Products: React.FC = () => {
                 ))}
               </select>
             </div>
-            <button
-              className="btn-primary"
-              onClick={() => setIsAddingProduct(true)}
-            >
-              ➕ Add Product
-            </button>
           </div>
 
           {/* Statistics */}
@@ -487,18 +489,27 @@ const Products: React.FC = () => {
             }}>
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>📦</div>
               <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>No products found</h3>
-              <p style={{ marginBottom: '24px' }}>
+              <p style={{ marginBottom: '24px', color: '#6b7280', fontSize: '16px' }}>
                 {searchTerm || selectedCategory 
-                  ? 'Try adjusting your search or filter criteria'
-                  : 'Get started by adding your first product'
+                  ? 'Try adjusting your search or filter criteria to find products'
+                  : 'Get started by adding your first product to build your inventory'
                 }
               </p>
               {!searchTerm && !selectedCategory && (
                 <button
                   className="btn-primary"
                   onClick={() => setIsAddingProduct(true)}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px',
+                    padding: '16px 24px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    margin: '0 auto'
+                  }}
                 >
-                  Add Your First Product
+                  🚀 Add Your First Product
                 </button>
               )}
             </div>

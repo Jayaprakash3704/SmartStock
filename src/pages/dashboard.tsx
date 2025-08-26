@@ -19,12 +19,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddProduct }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Simplified 4-color scheme: Red, Green, Blue, Orange
+  // Enhanced 4-color scheme with better semantic meanings
   const COLOR_SCHEME = {
-    success: '#22c55e',      // Green - Good performance, high values, positive
-    warning: '#f97316',      // Orange - Medium performance, caution, moderate
-    danger: '#ef4444',       // Red - Low performance, urgent attention, negative
-    primary: '#3b82f6',      // Blue - Primary data, normal, neutral
+    success: '#10b981',      // Emerald Green - High performance, good values
+    warning: '#f59e0b',      // Amber Orange - Medium performance, caution
+    danger: '#ef4444',       // Red - Low performance, urgent attention  
+    primary: '#3b82f6',      // Blue - Primary data, normal values
+    info: '#06b6d4',         // Cyan - Information, secondary data
   };
 
   // Enhanced color palette for better visual hierarchy
@@ -192,9 +193,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddProduct }) => {
                 <Cell 
                   key={`cell-${index}`} 
                   fill={
-                    entry.sales > 50000 ? COLOR_SCHEME.success :  // High sales
-                    entry.sales > 25000 ? COLOR_SCHEME.warning :  // Medium sales
-                    COLOR_SCHEME.danger                           // Low sales
+                    entry.sales >= 50000 ? COLOR_SCHEME.success :  // High sales - Green
+                    entry.sales >= 25000 ? COLOR_SCHEME.primary :  // Good sales - Blue
+                    entry.sales >= 10000 ? COLOR_SCHEME.warning :  // Medium sales - Orange
+                    COLOR_SCHEME.danger                            // Low sales - Red
                   }
                 />
               ))}
@@ -236,9 +238,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate, onAddProduct }) => {
                 <Cell 
                   key={`cell-${index}`} 
                   fill={
-                    entry.value > 15 ? COLOR_SCHEME.success :  // High category count
-                    entry.value > 5 ? COLOR_SCHEME.warning :   // Medium category count
-                    COLOR_SCHEME.danger                        // Low category count
+                    entry.value >= 20 ? COLOR_SCHEME.success :  // High category count - Green
+                    entry.value >= 10 ? COLOR_SCHEME.primary :  // Good category count - Blue  
+                    entry.value >= 5 ? COLOR_SCHEME.warning :   // Medium category count - Orange
+                    COLOR_SCHEME.danger                         // Low category count - Red
                   }
                 />
               ))}
