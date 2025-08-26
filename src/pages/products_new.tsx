@@ -278,7 +278,12 @@ const Products: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100%', background: 'var(--bg)' }}>
-      <div className="page-container">
+      <div className="page-container" style={{ 
+        maxHeight: 'none', 
+        overflowY: 'visible',
+        padding: '20px',
+        minHeight: 'auto'
+      }}>
         {/* Header */}
         <div className="page-header">
           <div>
@@ -322,38 +327,111 @@ const Products: React.FC = () => {
 
       {/* Products List */}
       {!isAddingProduct && !editingProduct && (
-        <div className="glass-card">
-          {/* Controls */}
+        <div className="glass-card" style={{ 
+          background: 'rgba(255, 255, 255, 0.95)', 
+          backdropFilter: 'blur(10px)',
+          borderRadius: '16px',
+          padding: '24px',
+          marginBottom: '24px',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+        }}>
+          {/* Enhanced Search & Filter Controls */}
           <div style={{ 
             display: 'flex', 
             justifyContent: 'space-between', 
-            alignItems: 'center', 
+            alignItems: 'flex-start', 
             marginBottom: '24px',
             flexWrap: 'wrap',
-            gap: '16px'
+            gap: '16px',
+            padding: '16px',
+            background: 'rgba(102, 126, 234, 0.05)',
+            borderRadius: '12px',
+            border: '1px solid rgba(102, 126, 234, 0.1)'
           }}>
-            <div style={{ display: 'flex', gap: '16px', flex: 1, flexWrap: 'wrap' }}>
-              <div className="search-container" style={{ flex: 1, minWidth: '250px' }}>
-                <div className="search-icon">🔍</div>
+            {/* Search and Category Section */}
+            <div style={{ 
+              display: 'flex', 
+              gap: '16px', 
+              flex: 1, 
+              flexWrap: 'wrap',
+              minWidth: '300px'
+            }}>
+              <div style={{ 
+                position: 'relative',
+                flex: 1, 
+                minWidth: '250px',
+                marginBottom: '8px'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  left: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: '18px',
+                  color: '#6b7280',
+                  zIndex: 2
+                }}>🔍</div>
                 <input
                   type="text"
-                  className="search-input"
-                  placeholder="Search products..."
+                  placeholder="Search by product name, SKU, category, or price..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '14px 16px 14px 48px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '10px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    background: 'white',
+                    transition: 'all 0.2s ease',
+                    outline: 'none',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#667eea';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(102, 126, 234, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#e5e7eb';
+                    e.target.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.05)';
+                  }}
                 />
               </div>
               <select
-                className="modern-select"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                style={{ minWidth: '150px', marginBottom: '0' }}
+                style={{ 
+                  minWidth: '180px', 
+                  padding: '14px 16px',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '10px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  background: 'white',
+                  cursor: 'pointer',
+                  outline: 'none',
+                  transition: 'all 0.2s ease'
+                }}
               >
-                <option value="">All Categories</option>
+                <option value="">🏷️ All Categories</option>
                 {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
+                  <option key={category} value={category}>📂 {category}</option>
                 ))}
               </select>
+            </div>
+            
+            {/* Filter Info */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '12px', 
+              fontWeight: '600', 
+              color: '#6b7280'
+            }}>
+              <span>📊 Showing {filteredProducts.length} of {products.length} products</span>
             </div>
           </div>
 
