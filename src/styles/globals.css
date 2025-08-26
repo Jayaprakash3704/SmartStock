@@ -169,15 +169,15 @@ body::after {
     padding-right: 1rem;
 }
 
-/* Enhanced page container for better scrolling and responsive design */
+/* Enhanced page container for normal scrolling behavior */
 .page-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px 16px;
     width: 100%;
+    height: auto;
     min-height: auto;
-    overflow-y: visible;
-    overflow-x: hidden;
+    overflow: visible;
 }
 
 /* Fixed page header styling - No sticky behavior */

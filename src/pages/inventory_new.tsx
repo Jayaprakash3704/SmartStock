@@ -112,10 +112,10 @@ const Inventory: React.FC = () => {
 
   return (
     <div className="page-container" style={{ 
-      maxHeight: 'none', 
-      overflowY: 'visible',
       padding: '20px',
-      minHeight: 'auto'
+      minHeight: 'auto',
+      height: 'auto',
+      overflow: 'visible'
     }}>
       {/* Enhanced Header with Refresh */}
       <motion.div 
@@ -405,8 +405,7 @@ const Inventory: React.FC = () => {
           }}>
             <div style={{ 
               overflowX: 'auto',
-              maxHeight: '600px',
-              overflowY: 'auto'
+              overflowY: 'visible'
             }}>
               <table style={{ 
                 width: '100%', 
@@ -416,9 +415,8 @@ const Inventory: React.FC = () => {
                 <thead style={{ 
                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                   color: 'white',
-                  position: 'sticky',
-                  top: 0,
-                  zIndex: 10
+                  position: 'relative',
+                  zIndex: 1
                 }}>
                   <tr>
                     <th style={{ 

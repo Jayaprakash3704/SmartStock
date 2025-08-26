@@ -279,10 +279,10 @@ const Products: React.FC = () => {
   return (
     <div style={{ minHeight: '100%', background: 'var(--bg)' }}>
       <div className="page-container" style={{ 
-        maxHeight: 'none', 
-        overflowY: 'visible',
         padding: '20px',
-        minHeight: 'auto'
+        minHeight: 'auto',
+        height: 'auto',
+        overflow: 'visible'
       }}>
         {/* Header */}
         <div className="page-header">
@@ -570,26 +570,9 @@ const Products: React.FC = () => {
               <p style={{ marginBottom: '24px', color: '#6b7280', fontSize: '16px' }}>
                 {searchTerm || selectedCategory 
                   ? 'Try adjusting your search or filter criteria to find products'
-                  : 'Get started by adding your first product to build your inventory'
+                  : 'Get started by adding your first product to build your inventory. Use the "Add New Product" button in the header above.'
                 }
               </p>
-              {!searchTerm && !selectedCategory && (
-                <button
-                  className="btn-primary"
-                  onClick={() => setIsAddingProduct(true)}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '8px',
-                    padding: '16px 24px',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    margin: '0 auto'
-                  }}
-                >
-                  🚀 Add Your First Product
-                </button>
-              )}
             </div>
           )}
         </div>
