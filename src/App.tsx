@@ -12,9 +12,9 @@ import { LoadingPage } from './components/ui/Loading';
 import './styles/globals.css';
 
 // Import pages
-import Dashboard from './pages/dashboard_dynamic';
-import Inventory from './pages/inventory_dynamic';
-import Products from './pages/products_new';
+import Dashboard from './pages/dashboard';
+import Inventory from './pages/inventory';
+import Products from './pages/products';
 import Sales from './pages/sales';
 import Reports from './pages/reports';
 import Settings from './pages/settings';
