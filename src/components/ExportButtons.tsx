@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { Product } from '../types';
-import reportService from '../services/reportService_new';
-import PDFGenerator from '../services/pdfGenerator';
 import exportService, { ExportOptions } from '../services/exportService';
 import { notificationManager } from '../services/notificationManager';
 
@@ -100,13 +98,13 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
               fontSize: '18px',
               fontWeight: '700',
               margin: 0,
-              color: '#374151'
+              color: 'var(--text)'
             }}>
               📤 Export Data
             </h3>
             <p style={{
               margin: '4px 0 0 0',
-              color: '#6b7280',
+              color: 'var(--text-muted)',
               fontSize: '14px'
             }}>
               Download your reports in multiple formats
@@ -124,31 +122,31 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
 
         {showPreview && (
           <div style={{ background: 'var(--surface-2)', borderRadius: '12px', padding: '16px', marginBottom: '20px', border: '1px solid var(--border)' }}>
-            <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: '#374151' }}>
+            <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px', color: 'var(--text)' }}>
               Export Preview
             </h4>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '12px' }}>
               <div>
-                <div style={{ fontSize: '12px', color: '#6b7280' }}>Records</div>
-                <div style={{ fontSize: '16px', fontWeight: '600', color: '#374151' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Records</div>
+                <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text)' }}>
                   {exportPreview.totalRecords}
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '12px', color: '#6b7280' }}>Total Value</div>
-                <div style={{ fontSize: '16px', fontWeight: '600', color: '#10b981' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Total Value</div>
+                <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--chart-green)' }}>
                   ₹{exportPreview.summary.totalValue.toLocaleString('en-IN')}
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '12px', color: '#6b7280' }}>Categories</div>
-                <div style={{ fontSize: '16px', fontWeight: '600', color: '#f59e0b' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Categories</div>
+                <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--chart-yellow)' }}>
                   {exportPreview.summary.categories}
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '12px', color: '#6b7280' }}>Suppliers</div>
-                <div style={{ fontSize: '16px', fontWeight: '600', color: '#8b5cf6' }}>
+                <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Suppliers</div>
+                <div style={{ fontSize: '16px', fontWeight: '600', color: 'var(--chart-purple)' }}>
                   {exportPreview.summary.suppliers}
                 </div>
               </div>
@@ -230,9 +228,9 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
           <div style={{
             marginTop: '16px',
             padding: '12px',
-            background: 'rgba(59, 130, 246, 0.1)',
+            background: 'var(--surface-2)',
             borderRadius: '8px',
-            border: '1px solid rgba(59, 130, 246, 0.2)',
+            border: '1px solid var(--border)',
             display: 'flex',
             alignItems: 'center',
             gap: '12px'
@@ -240,16 +238,16 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({
             <div style={{
               width: '20px',
               height: '20px',
-              border: '2px solid #3b82f6',
+              border: '2px solid var(--primary)',
               borderTopColor: 'transparent',
               borderRadius: '50%',
               animation: 'spin 1s linear infinite'
             }} />
             <div>
-              <div style={{ fontSize: '14px', fontWeight: '600', color: '#1d4ed8' }}>
+              <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--primary)' }}>
                 Generating Export...
               </div>
-              <div style={{ fontSize: '12px', color: '#6b7280' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                 Processing {products.length} records with charts and formatting
               </div>
             </div>

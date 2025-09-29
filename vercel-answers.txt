@@ -1,3 +1,0 @@
-smartstock-app
-./
-n

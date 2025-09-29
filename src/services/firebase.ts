@@ -14,13 +14,13 @@ type FirebaseConfig = {
 };
 
 const firebaseConfig: FirebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || "AIzaSyDUdgSLdfyD4FyJxzKCtPlG0iHo7PstPJk",
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || "smartstock33-1d68e.firebaseapp.com",
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || "smartstock33-1d68e",
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || "smartstock33-1d68e.firebasestorage.app",
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || "461798182347",
+  appId: process.env.REACT_APP_FIREBASE_APP_ID || "1:461798182347:web:d557caa4ad0ca347233a4e",
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID || "G-3C096DVY6S",
 };
 
 const isValidConfig = (cfg: FirebaseConfig) =>

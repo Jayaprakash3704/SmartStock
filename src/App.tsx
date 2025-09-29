@@ -7,7 +7,6 @@ import { ThemeProvider } from './contexts/ThemeContextNew';
 import { notificationManager } from './services/notificationManager';
 import { isFirebaseEnabled } from './services/firebase';
 import { migrateLocalProductsToFirestore } from './services/migration';
-import { initializeDemoData } from './services/mockDataInitializer';
 import { Layout } from './components/ui/Layout';
 import { LoadingPage } from './components/ui/Loading';
 import './styles/globals.css';
@@ -42,25 +41,11 @@ const App: React.FC = () => {
   // Initialize dynamic features when user logs in
   useEffect(() => {
     if (user) {
-      // Initialize demo data for demonstration
-      const initData = async () => {
-        try {
-          await initializeDemoData();
-          notificationManager.showSuccess(
-            '🎭 Demo Data Ready!',
-            'Comprehensive product catalog loaded for demonstration'
-          );
-        } catch (error) {
-          console.error('Failed to initialize demo data:', error);
-        }
-      };
-
       setTimeout(() => {
         notificationManager.showInfo(
           '🚀 Welcome to SmartStock!',
           'Your modern inventory management system is ready to use.'
         );
-        initData();
       }, 1000);
 
       // Migrate local data to Firestore if available

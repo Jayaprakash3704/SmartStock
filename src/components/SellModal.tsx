@@ -284,7 +284,7 @@ const SellModal: React.FC<SellModalProps> = ({ product, onClose, onSaleComplete 
               borderRadius: '8px',
               border: 'none',
               background: 'var(--success)',
-              color: '#ffffff',
+              color: 'white',
               fontSize: '14px',
               fontWeight: '600',
               cursor: 'pointer',

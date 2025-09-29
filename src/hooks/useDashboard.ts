@@ -125,9 +125,9 @@ export const useDashboard = () => {
 
     // Stock levels distribution with professional colors
     const stockLevels = [
-      { name: 'Good Stock', value: products.filter(p => p.minStockLevel && p.quantity > p.minStockLevel * 1.5).length, color: '#43e97b', gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' },
-      { name: 'Low Stock', value: products.filter(p => p.minStockLevel && p.quantity <= p.minStockLevel && p.quantity > 0).length, color: '#ffd93d', gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
-      { name: 'Out of Stock', value: products.filter(p => p.quantity === 0).length, color: '#ff6b6b', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' }
+      { name: 'Good Stock', value: products.filter(p => p.minStockLevel && p.quantity > p.minStockLevel * 1.5).length, color: 'var(--chart-green)', gradient: 'var(--gradient-success)' },
+      { name: 'Low Stock', value: products.filter(p => p.minStockLevel && p.quantity <= p.minStockLevel && p.quantity > 0).length, color: 'var(--chart-yellow)', gradient: 'var(--gradient-secondary)' },
+      { name: 'Out of Stock', value: products.filter(p => p.quantity === 0).length, color: 'var(--chart-red)', gradient: 'var(--gradient-secondary)' }
     ];
 
     // Sales trends (mock data for now)

@@ -22,10 +22,10 @@ const ProductDataTable: React.FC<ProductDataTableProps> = ({ products, isLoading
   const totalPages = Math.ceil(products.length / itemsPerPage);
 
   const getStockStatus = (product: Product) => {
-    if (product.quantity === 0) return { status: 'Out of Stock', color: '#ef4444', bg: '#fee2e2' };
-    if (product.minStockLevel && product.quantity <= product.minStockLevel) return { status: 'Low Stock', color: '#f59e0b', bg: '#fef3c7' };
-    if (product.maxStockLevel && product.quantity > product.maxStockLevel) return { status: 'Overstock', color: '#8b5cf6', bg: '#f3e8ff' };
-    return { status: 'In Stock', color: '#10b981', bg: '#d1fae5' };
+    if (product.quantity === 0) return { status: 'Out of Stock', color: 'var(--chart-red)', bg: 'var(--surface-danger)' };
+    if (product.minStockLevel && product.quantity <= product.minStockLevel) return { status: 'Low Stock', color: 'var(--chart-yellow)', bg: 'var(--surface-warning)' };
+    if (product.maxStockLevel && product.quantity > product.maxStockLevel) return { status: 'Overstock', color: 'var(--chart-purple)', bg: 'var(--surface-info)' };
+    return { status: 'In Stock', color: 'var(--chart-green)', bg: 'var(--surface-success)' };
   };
 
   if (isLoading) {
@@ -63,7 +63,7 @@ const ProductDataTable: React.FC<ProductDataTableProps> = ({ products, isLoading
           </h3>
           <p style={{ 
             margin: '4px 0 0 0', 
-            color: '#6b7280', 
+            color: 'var(--text-muted)', 
             fontSize: '14px' 
           }}>
             Showing {paginatedProducts.length} of {products.length} products
@@ -101,7 +101,7 @@ const ProductDataTable: React.FC<ProductDataTableProps> = ({ products, isLoading
           borderCollapse: 'collapse',
           fontSize: '14px'
         }}>
-          <thead style={{ background: 'var(--primary)', position: 'sticky', top: 0, zIndex: 10 }}>
+          <thead style={{ background: 'var(--primary)', position: 'relative', zIndex: 1 }}>
             <tr>
               {[
                 { key: 'name', label: '📦 Product' },
@@ -113,7 +113,7 @@ const ProductDataTable: React.FC<ProductDataTableProps> = ({ products, isLoading
                 { key: 'location', label: '📍 Location' },
                 { key: 'status', label: '⚡ Status' }
               ].map(col => (
-                <th key={col.key} style={{ padding: '16px 12px', textAlign: 'left', color: '#ffffff', fontWeight: '600', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                <th key={col.key} style={{ padding: '16px 12px', textAlign: 'left', color: 'white', fontWeight: '600', fontSize: '13px', whiteSpace: 'nowrap' }}>
                   {col.label}
                 </th>
               ))}

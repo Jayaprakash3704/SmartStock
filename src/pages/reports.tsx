@@ -27,7 +27,7 @@ import { Product } from '../types';
 import { formatIndianNumber } from '../utils/helpers';
 import { useCurrency } from '../contexts/CurrencyContext';
 import { useTheme } from '../contexts/ThemeContextNew';
-import reportService from '../services/reportService_new';
+// import reportService from '../services/reportService'; // Removed unused import
 import { productsAPI } from '../services/api';
 import AdvancedFilters from '../components/AdvancedFilters';
 import ProductDataTable from '../components/ProductDataTable';
@@ -48,7 +48,7 @@ const REPORT_TYPES = [
     name: 'Sales Performance', 
     icon: '💰', 
     description: 'Revenue insights, customer analytics, trends & forecasting',
-  gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+  gradient: 'var(--gradient-secondary)',
   color: 'var(--danger)',
     features: ['Revenue Trends', 'Customer Segmentation', 'Product Performance', 'Seasonal Analysis']
   },
@@ -57,7 +57,7 @@ const REPORT_TYPES = [
     name: 'Financial Overview', 
     icon: '📈', 
     description: 'P&L analysis, cash flow, margins & profitability insights',
-  gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+  gradient: 'var(--gradient-success)',
   color: 'var(--info)',
     features: ['Profit Analysis', 'Cost Tracking', 'ROI Metrics', 'Budget Variance']
   },
@@ -66,7 +66,7 @@ const REPORT_TYPES = [
     name: 'Tax & Compliance', 
     icon: '🧾', 
     description: 'GST reports, tax compliance & regulatory filings',
-  gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+  gradient: 'var(--gradient-success)',
   color: 'var(--success)',
     features: ['GSTR Reports', 'Tax Liability', 'Compliance Score', 'Return Filing']
   }
@@ -83,8 +83,10 @@ const REPORT_TYPES = [
 ];
 
 const CHART_COLORS = [
-  '#667eea', '#5a67d8', '#4f56d3', '#764ba2', '#6b46c1', '#8b5cf6',
-  '#3b82f6', '#1d4ed8', '#1e40af', '#60a5fa', '#93c5fd', '#dbeafe'
+  'var(--chart-blue)', 'var(--chart-purple)', 'var(--chart-indigo)', 
+  'var(--chart-green)', 'var(--chart-teal)', 'var(--chart-cyan)',
+  'var(--chart-orange)', 'var(--chart-red)', 'var(--chart-pink)', 
+  'var(--chart-yellow)', 'var(--primary)', 'var(--accent)'
 ];
 
 // Enhanced color scheme with semantic meanings
@@ -425,115 +427,267 @@ const ReportsEnhanced: React.FC = () => {
       if (type === 'inventory') {
         const { categories, topProducts } = getInventoryDatasets();
         const series = topProducts.map(tp => ({ name: tp.name, value: tp.value }));
+        
+        // Stock level distribution for pie chart
+        const stockLevels = [
+          { name: 'High Stock (>50)', value: productDetails.filter(p => (p.quantity || 0) > 50).length, color: COLOR_SCHEME.success },
+          { name: 'Medium Stock (21-50)', value: productDetails.filter(p => (p.quantity || 0) >= 21 && (p.quantity || 0) <= 50).length, color: COLOR_SCHEME.primary },
+          { name: 'Low Stock (11-20)', value: productDetails.filter(p => (p.quantity || 0) >= 11 && (p.quantity || 0) <= 20).length, color: COLOR_SCHEME.warning },
+          { name: 'Critical Stock (≤10)', value: productDetails.filter(p => (p.quantity || 0) <= 10).length, color: COLOR_SCHEME.danger }
+        ].filter(item => item.value > 0);
+
+        // Time-based stock data for area chart
+        const stockTrend = [
+          { month: 'Jan', currentStock: 850, reorderLevel: 200, excessStock: 150 },
+          { month: 'Feb', currentStock: 920, reorderLevel: 220, excessStock: 180 },
+          { month: 'Mar', currentStock: 780, reorderLevel: 200, excessStock: 120 },
+          { month: 'Apr', currentStock: 1050, reorderLevel: 250, excessStock: 200 },
+          { month: 'May', currentStock: 1200, reorderLevel: 280, excessStock: 240 },
+          { month: 'Jun', currentStock: 1100, reorderLevel: 260, excessStock: 220 }
+        ];
+
         return renderSection(
           'inventory-charts',
           '📦',
-          'Inventory Analytics — Analytics',
+          'Inventory Analytics — Best Chart Selection',
           grid(
             <>
+              {/* PIE CHART - Perfect for Category Distribution (shows proportions clearly) */}
               <div className="chart-container">
-                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📊 Category Distribution</h4>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🥧 Category Distribution
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Pie Chart - Best for proportions)
+                  </span>
+                </h4>
                 <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={categories}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
-                    <XAxis 
-                      dataKey="name" 
-                      stroke={chartConfig.textColor} 
-                      fontSize={12} 
-                      interval={0} 
-                      angle={-45} 
-                      textAnchor="end" 
-                      height={80}
-                    />
-                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
-                    <Tooltip {...chartConfig.tooltip} />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      iconType="rect"
-                      formatter={(value: string) => `${value} - Color Guide: 🟢Green=High/Good, 🔵Blue=Normal, 🟠Orange=Medium/Caution, 🔴Red=Low/Poor`}
-                    />
-                    <Bar 
-                      dataKey="value" 
-                      name="Product Count"
-                      radius={[6,6,0,0]}
-                      strokeWidth={1}
+                  <PieChart>
+                    <Pie
+                      data={categories}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent, value }) => `${name}: ${value} (${((percent || 0) * 100).toFixed(1)}%)`}
+                      outerRadius={120}
+                      innerRadius={50}
+                      fill="#8884d8"
+                      dataKey="value"
+                      stroke="rgba(255,255,255,0.8)"
+                      strokeWidth={2}
                     >
                       {categories.map((entry, index) => (
                         <Cell 
-                          key={`cell-${index}`} 
+                          key={`pie-cell-${index}`} 
                           fill={getChartColors(theme)[index % getChartColors(theme).length]}
-                          stroke={getChartColors(theme)[index % getChartColors(theme).length]}
                         />
                       ))}
-                    </Bar>
-                  </BarChart>
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: any, name: any) => [`${value} products`, name]}
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                      }}
+                    />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '12px' }}
+                    />
+                  </PieChart>
                 </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  📊 <strong>Why Pie Chart:</strong> Perfect for showing category proportions and percentages at a glance
+                </div>
               </div>
+
+              {/* DONUT CHART - Perfect for Stock Level Status */}
               <div className="chart-container">
-                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📦 Stock by Category</h4>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🍩 Stock Level Status
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Donut Chart - Best for status overview)
+                  </span>
+                </h4>
                 <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={categories}>
+                  <PieChart>
+                    <Pie
+                      data={stockLevels}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent, value }) => `${name}: ${value} (${((percent || 0) * 100).toFixed(1)}%)`}
+                      outerRadius={120}
+                      innerRadius={70}
+                      fill="#8884d8"
+                      dataKey="value"
+                      stroke="rgba(255,255,255,0.9)"
+                      strokeWidth={3}
+                    >
+                      {stockLevels.map((entry, index) => (
+                        <Cell key={`donut-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: any, name: any) => [`${value} products`, name]}
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                      }}
+                    />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '12px' }}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  🍩 <strong>Why Donut Chart:</strong> Excellent for showing stock health status with clear color coding
+                  <br />
+                  Status: <span style={{ color: COLOR_SCHEME.success }}>● High</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Medium</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Low</span> 
+                  <span style={{ color: COLOR_SCHEME.danger }}> ● Critical</span>
+                </div>
+              </div>
+
+              {/* AREA CHART - Perfect for Stock Trends Over Time */}
+              <div className="chart-container">
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  📈 Stock Trend Analysis
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Area Chart - Best for trends over time)
+                  </span>
+                </h4>
+                <ResponsiveContainer width="100%" height={400}>
+                  <AreaChart data={stockTrend} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <defs>
+                      <linearGradient id="stockGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={COLOR_SCHEME.primary} stopOpacity={0.8}/>
+                        <stop offset="100%" stopColor={COLOR_SCHEME.primary} stopOpacity={0.1}/>
+                      </linearGradient>
+                      <linearGradient id="reorderGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={COLOR_SCHEME.warning} stopOpacity={0.6}/>
+                        <stop offset="100%" stopColor={COLOR_SCHEME.warning} stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
-                    <XAxis dataKey="name" stroke={chartConfig.textColor} fontSize={12} interval={0} angle={-10} dy={10} />
+                    <XAxis dataKey="month" stroke={chartConfig.textColor} fontSize={12} />
                     <YAxis stroke={chartConfig.textColor} fontSize={12} />
-                    <Tooltip {...chartConfig.tooltip} />
-                    <Bar dataKey="value" fill="var(--primary)" radius={[4,4,0,0]} />
-                  </BarChart>
+                    <Tooltip 
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                      }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    <Area 
+                      type="monotone" 
+                      dataKey="currentStock" 
+                      stroke={COLOR_SCHEME.primary}
+                      strokeWidth={3}
+                      fill="url(#stockGradient)"
+                      name="Current Stock Level"
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="reorderLevel" 
+                      stroke={COLOR_SCHEME.warning}
+                      strokeWidth={2}
+                      fill="url(#reorderGradient)"
+                      name="Reorder Level"
+                    />
+                  </AreaChart>
                 </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  📈 <strong>Why Area Chart:</strong> Perfect for showing stock trends, seasonality, and reorder patterns over time
+                  <br />
+                  Trend Lines: <span style={{ color: COLOR_SCHEME.primary }}>● Current Stock</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Reorder Level</span>
+                </div>
               </div>
+
+              {/* HORIZONTAL BAR CHART - Perfect for Top Products Ranking */}
               <div className="chart-container">
-                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>🏆 Top Products by Value</h4>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🏆 Top Products by Value
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Horizontal Bar - Best for rankings)
+                  </span>
+                </h4>
                 <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={series}>
+                  <BarChart 
+                    data={series} 
+                    layout="horizontal"
+                    margin={{ top: 20, right: 30, left: 80, bottom: 20 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
                     <XAxis 
+                      type="number"
+                      stroke={chartConfig.textColor} 
+                      fontSize={12}
+                    />
+                    <YAxis 
+                      type="category"
                       dataKey="name" 
                       stroke={chartConfig.textColor} 
-                      fontSize={12} 
-                      interval={0} 
-                      angle={-45} 
-                      textAnchor="end" 
-                      height={80}
+                      fontSize={11}
+                      width={70}
                     />
-                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
-                    <Tooltip {...chartConfig.tooltip} />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      iconType="rect"
+                    <Tooltip 
+                      formatter={(value: any) => [`₹${value.toLocaleString('en-IN')}`, 'Product Value']}
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px'
+                      }}
                     />
                     <Bar 
                       dataKey="value" 
                       name="Product Value (₹)"
-                      radius={[6,6,0,0]}
+                      radius={[0, 6, 6, 0]}
                       strokeWidth={1}
                     >
                       {series.map((entry, index) => {
-                        // Color coding based on value performance - CORRECTED LOGIC
-                        let color = COLOR_SCHEME.primary;
+                        // Performance-based color coding
                         const value = entry.value || 0;
                         const maxValue = Math.max(...series.map(s => s.value || 0));
-                        const minValue = Math.min(...series.map(s => s.value || 0));
-                        const valueRange = maxValue - minValue;
-                        const normalizedValue = valueRange > 0 ? (value - minValue) / valueRange : 0.5;
+                        const performance = maxValue > 0 ? value / maxValue : 0;
                         
-                        // Proper color assignment: Higher values = Green, Lower values = Red
-                        if (normalizedValue >= 0.75) color = COLOR_SCHEME.success;        // Top 25% - Green (High)
-                        else if (normalizedValue >= 0.5) color = COLOR_SCHEME.primary;   // 50-75% - Blue (Good)  
-                        else if (normalizedValue >= 0.25) color = COLOR_SCHEME.warning;  // 25-50% - Orange (Medium)
-                        else color = COLOR_SCHEME.danger;                                // Bottom 25% - Red (Low)
+                        let color = COLOR_SCHEME.primary;
+                        if (performance >= 0.75) color = COLOR_SCHEME.success;        // Top 25% - Green
+                        else if (performance >= 0.5) color = COLOR_SCHEME.primary;   // 50-75% - Blue
+                        else if (performance >= 0.25) color = COLOR_SCHEME.warning;  // 25-50% - Orange
+                        else color = COLOR_SCHEME.danger;                            // Bottom 25% - Red
                         
                         return (
                           <Cell 
                             key={`cell-${index}`} 
                             fill={color}
                             stroke={color}
-                            strokeWidth={2}
                           />
                         );
                       })}
                     </Bar>
                   </BarChart>
                 </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  🏆 <strong>Why Horizontal Bar:</strong> Perfect for product rankings - easier to read product names
+                  <br />
+                  Performance: <span style={{ color: COLOR_SCHEME.success }}>● Top Performers</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Good</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Average</span> 
+                  <span style={{ color: COLOR_SCHEME.danger }}> ● Poor</span>
+                </div>
               </div>
             </>
           )
@@ -544,165 +698,278 @@ const ReportsEnhanced: React.FC = () => {
         const { monthlySales, productPerformance, customerSegments } = getSalesDatasets();
         const totalSales = monthlySales.reduce((s, m) => s + m.sales, 0);
         const topSegment = [...customerSegments].sort((a,b)=>b.revenue-a.revenue)[0];
-        const renderPieLabel = ({ name, percent, value }: any) => `${name}: Rs. ${value.toLocaleString('en-IN')} (${(percent*100).toFixed(0)}%)`;
+        
+        // Enhanced data for different chart types
+        const salesTrendData = monthlySales.map((item, index) => ({
+          ...item,
+          growth: index > 0 ? ((item.sales - monthlySales[index - 1].sales) / monthlySales[index - 1].sales * 100) : 0
+        }));
+
+        const performanceRadarData = productPerformance.slice(0, 5).map(p => ({
+          product: p.name.substring(0, 8),
+          sales: Math.round(p.sales / 1000), // Normalize for radar
+          margin: p.margin,
+          customer_rating: 70 + (p.sales % 30),
+          inventory_turnover: 50 + (p.margin % 40),
+          market_share: 30 + (p.sales % 50)
+        }));
+
         return renderSection(
           'sales-charts',
           '💰',
-          'Sales Performance — Analytics',
+          'Sales Performance — Optimized Chart Selection',
           grid(
             <>
-              <div>
-                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📈 Monthly Sales vs Target</h4>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={monthlySales}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="month" stroke="var(--text-muted)" fontSize={12} />
-                    <YAxis stroke="var(--text-muted)" fontSize={12} />
-                    <Tooltip />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      iconType="rect"
-                      formatter={(value: string) => 
-                        value.includes('Actual') ? `${value} - 🟢Green=Revenue` :
-                        value.includes('Target') ? `${value} - 🟠Orange=Goals` : 
-                        `${value} - Color Guide: 🟢Green=Revenue, 🟠Orange=Targets`
-                      }
+              {/* LINE CHART - Perfect for Sales Trends Over Time */}
+              <div className="chart-container">
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  📈 Sales Trend Analysis
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Line Chart - Best for time series trends)
+                  </span>
+                </h4>
+                <ResponsiveContainer width="100%" height={400}>
+                  <LineChart data={salesTrendData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis dataKey="month" stroke={chartConfig.textColor} fontSize={12} />
+                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                      }}
                     />
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    <Line 
+                      type="monotone" 
+                      dataKey="sales" 
+                      stroke={COLOR_SCHEME.success}
+                      strokeWidth={4}
+                      dot={{ fill: COLOR_SCHEME.success, strokeWidth: 2, r: 6 }}
+                      activeDot={{ r: 8, stroke: COLOR_SCHEME.success, strokeWidth: 3 }}
+                      name="Actual Sales (₹)"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="target" 
+                      stroke={COLOR_SCHEME.warning}
+                      strokeWidth={3}
+                      strokeDasharray="8 8"
+                      dot={{ fill: COLOR_SCHEME.warning, strokeWidth: 2, r: 4 }}
+                      activeDot={{ r: 6, stroke: COLOR_SCHEME.warning, strokeWidth: 2 }}
+                      name="Sales Target (₹)"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  📈 <strong>Why Line Chart:</strong> Perfect for showing sales trends, growth patterns, and target comparison over time
+                  <br />
+                  Summary: Total Sales Rs. {totalSales.toLocaleString('en-IN')} · 
+                  <span style={{ color: COLOR_SCHEME.success }}> ● Actual Sales</span> vs 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Target (Dashed)</span>
+                </div>
+              </div>
+
+              {/* RADAR CHART - Perfect for Multi-dimensional Product Performance */}
+              <div className="chart-container">
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🎯 Product Performance Matrix
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Radar Chart - Best for multi-metric comparison)
+                  </span>
+                </h4>
+                <ResponsiveContainer width="100%" height={400}>
+                  <RadarChart data={performanceRadarData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+                    <PolarGrid stroke={chartConfig.gridColor} />
+                    <PolarAngleAxis 
+                      dataKey="product" 
+                      tick={{ fontSize: 11, fill: chartConfig.textColor }}
+                    />
+                    <PolarRadiusAxis 
+                      tick={{ fontSize: 10, fill: chartConfig.textColor }}
+                      domain={[0, 100]}
+                    />
+                    <Tooltip 
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px'
+                      }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    <Radar
+                      name="Sales Performance"
+                      dataKey="sales"
+                      stroke={COLOR_SCHEME.success}
+                      fill={COLOR_SCHEME.success}
+                      fillOpacity={0.3}
+                      strokeWidth={2}
+                    />
+                    <Radar
+                      name="Profit Margin"
+                      dataKey="margin"
+                      stroke={COLOR_SCHEME.primary}
+                      fill={COLOR_SCHEME.primary}
+                      fillOpacity={0.2}
+                      strokeWidth={2}
+                    />
+                    <Radar
+                      name="Customer Rating"
+                      dataKey="customer_rating"
+                      stroke={COLOR_SCHEME.warning}
+                      fill={COLOR_SCHEME.warning}
+                      fillOpacity={0.2}
+                      strokeWidth={2}
+                    />
+                  </RadarChart>
+                </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  🎯 <strong>Why Radar Chart:</strong> Perfect for comparing multiple performance metrics across products simultaneously
+                  <br />
+                  Metrics: <span style={{ color: COLOR_SCHEME.success }}>● Sales</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Margin</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Rating</span>
+                </div>
+              </div>
+
+              {/* STACKED AREA CHART - Perfect for Customer Segment Growth */}
+              <div className="chart-container">
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  👥 Customer Segment Growth
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Stacked Area - Best for segment composition over time)
+                  </span>
+                </h4>
+                <ResponsiveContainer width="100%" height={400}>
+                  <AreaChart 
+                    data={[
+                      { month: 'Jan', Retail: 45000, Wholesale: 35000, Online: 20000 },
+                      { month: 'Feb', Retail: 52000, Wholesale: 38000, Online: 25000 },
+                      { month: 'Mar', Retail: 48000, Wholesale: 32000, Online: 28000 },
+                      { month: 'Apr', Retail: 61000, Wholesale: 42000, Online: 32000 },
+                      { month: 'May', Retail: 68000, Wholesale: 45000, Online: 38000 },
+                      { month: 'Jun', Retail: 65000, Wholesale: 48000, Online: 42000 }
+                    ]}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  >
+                    <defs>
+                      <linearGradient id="retailGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={COLOR_SCHEME.success} stopOpacity={0.8}/>
+                        <stop offset="100%" stopColor={COLOR_SCHEME.success} stopOpacity={0.2}/>
+                      </linearGradient>
+                      <linearGradient id="wholesaleGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={COLOR_SCHEME.primary} stopOpacity={0.8}/>
+                        <stop offset="100%" stopColor={COLOR_SCHEME.primary} stopOpacity={0.2}/>
+                      </linearGradient>
+                      <linearGradient id="onlineGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={COLOR_SCHEME.warning} stopOpacity={0.8}/>
+                        <stop offset="100%" stopColor={COLOR_SCHEME.warning} stopOpacity={0.2}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis dataKey="month" stroke={chartConfig.textColor} fontSize={12} />
+                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip 
+                      formatter={(value: any) => [`₹${value.toLocaleString('en-IN')}`, '']}
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px'
+                      }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    <Area
+                      type="monotone"
+                      dataKey="Retail"
+                      stackId="1"
+                      stroke={COLOR_SCHEME.success}
+                      fill="url(#retailGradient)"
+                      strokeWidth={2}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="Wholesale"
+                      stackId="1"
+                      stroke={COLOR_SCHEME.primary}
+                      fill="url(#wholesaleGradient)"
+                      strokeWidth={2}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="Online"
+                      stackId="1"
+                      stroke={COLOR_SCHEME.warning}
+                      fill="url(#onlineGradient)"
+                      strokeWidth={2}
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  📊 <strong>Why Stacked Area:</strong> Perfect for showing customer segment contribution and growth patterns over time
+                  <br />
+                  Segments: <span style={{ color: COLOR_SCHEME.success }}>● Retail</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Wholesale</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Online</span>
+                </div>
+              </div>
+
+              {/* COMPOSED CHART - Perfect for Sales vs Targets with Growth Rate */}
+              <div className="chart-container">
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  📊 Sales Performance Dashboard
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Combined Chart - Best for multiple data types)
+                  </span>
+                </h4>
+                <ResponsiveContainer width="100%" height={400}>
+                  <ComposedChart data={salesTrendData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis dataKey="month" stroke={chartConfig.textColor} fontSize={12} />
+                    <YAxis yAxisId="sales" stroke={chartConfig.textColor} fontSize={12} />
+                    <YAxis yAxisId="growth" orientation="right" stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip 
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px'
+                      }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
                     <Bar 
+                      yAxisId="sales"
                       dataKey="sales" 
                       fill={COLOR_SCHEME.success}
                       name="Actual Sales (₹)"
                       radius={[4,4,0,0]}
-                      stroke={COLOR_SCHEME.success}
-                      strokeWidth={1}
+                      fillOpacity={0.8}
                     />
                     <Bar 
+                      yAxisId="sales"
                       dataKey="target" 
                       fill={COLOR_SCHEME.warning}
                       name="Sales Target (₹)"
                       radius={[4,4,0,0]}
-                      stroke={COLOR_SCHEME.warning}
-                      strokeWidth={1}
+                      fillOpacity={0.6}
                     />
-                  </BarChart>
+                    <Line 
+                      yAxisId="growth"
+                      type="monotone" 
+                      dataKey="growth" 
+                      stroke={COLOR_SCHEME.danger}
+                      strokeWidth={3}
+                      dot={{ fill: COLOR_SCHEME.danger, strokeWidth: 2, r: 5 }}
+                      name="Growth Rate (%)"
+                    />
+                  </ComposedChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
-                  Summary: Total Sales (6 mo) Rs. {totalSales.toLocaleString('en-IN')} · Avg per month Rs. {(Math.round(totalSales/Math.max(1,monthlySales.length))).toLocaleString('en-IN')}
+                  📊 <strong>Why Combined Chart:</strong> Perfect for showing sales bars with growth trend line - multiple data types together
                   <br />
-                  <span style={{ color: COLOR_SCHEME.success }}>● Actual Sales</span> vs <span style={{ color: COLOR_SCHEME.warning }}>● Target</span>
-                </div>
-              </div>
-              <div className="chart-container">
-                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>🏅 Product Performance</h4>
-                <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={productPerformance}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
-                    <XAxis 
-                      dataKey="name" 
-                      stroke={chartConfig.textColor} 
-                      fontSize={12}
-                      interval={0} 
-                      angle={-45} 
-                      textAnchor="end" 
-                      height={80}
-                    />
-                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
-                    <Tooltip {...chartConfig.tooltip} />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      iconType="rect"
-                    />
-                    <Bar 
-                      dataKey="sales" 
-                      name="Sales Performance (₹)"
-                      radius={[6,6,0,0]}
-                      strokeWidth={1}
-                    >
-                      {productPerformance.map((entry, index) => {
-                        // Performance-based color coding - CORRECTED LOGIC
-                        let color = COLOR_SCHEME.primary;
-                        const maxSales = Math.max(...productPerformance.map(p => p.sales));
-                        const performance = maxSales > 0 ? entry.sales / maxSales : 0;
-                        
-                        // Proper performance color assignment: Higher sales = Green, Lower sales = Red
-                        if (performance >= 0.8) color = COLOR_SCHEME.success;        // 80%+ - Green (Excellent)
-                        else if (performance >= 0.6) color = COLOR_SCHEME.primary;   // 60-80% - Blue (Good)
-                        else if (performance >= 0.4) color = COLOR_SCHEME.warning;   // 40-60% - Orange (Average)
-                        else color = COLOR_SCHEME.danger;                            // <40% - Red (Poor)
-                        
-                        return (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={color}
-                            stroke={color}
-                          />
-                        );
-                      })}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
-                  Summary: Top product by revenue — {productPerformance[0]?.name || 'N/A'}
-                  <br />
-                  <span style={{ color: COLOR_SCHEME.success }}>● Excellent (80%+)</span> 
-                  <span style={{ color: COLOR_SCHEME.primary }}> ● Good (60%+)</span> 
-                  <span style={{ color: COLOR_SCHEME.warning }}> ● Average (40%+)</span> 
-                  <span style={{ color: COLOR_SCHEME.danger }}> ● Poor (&lt;40%)</span>
-                </div>
-              </div>
-              <div className="chart-container">
-                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>👥 Customer Segments</h4>
-                <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={customerSegments}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
-                    <XAxis 
-                      dataKey="segment" 
-                      stroke={chartConfig.textColor} 
-                      fontSize={12}
-                      interval={0} 
-                      angle={-45} 
-                      textAnchor="end" 
-                      height={80}
-                    />
-                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
-                    <Tooltip {...chartConfig.tooltip} />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      iconType="rect"
-                      formatter={(value: string) => `${value} - Color Guide: 🟢Green=Premium, 🔵Blue=Regular, 🟠Orange=New, 🔴Red=Occasional`}
-                    />
-                    <Bar 
-                      dataKey="revenue" 
-                      name="Segment Revenue (₹)"
-                      radius={[6,6,0,0]}
-                      strokeWidth={1}
-                    >
-                      {customerSegments.map((entry, index) => {
-                        // Segment-based color coding (using only 4 colors)
-                        const colors = [
-                          COLOR_SCHEME.success,   // Premium customers - Green
-                          COLOR_SCHEME.primary,   // Regular customers - Blue  
-                          COLOR_SCHEME.warning,   // New customers - Orange
-                          COLOR_SCHEME.danger,    // Occasional customers - Red
-                        ];
-                        return (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={colors[index % colors.length]}
-                            stroke={colors[index % colors.length]}
-                          />
-                        );
-                      })}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
-                  Summary: Top segment — {topSegment?.segment} (Rs. {topSegment?.revenue.toLocaleString('en-IN')})
-                  <br />
-                  Customer Types: <span style={{ color: COLOR_SCHEME.success }}>● Premium</span> 
-                  <span style={{ color: COLOR_SCHEME.primary }}> ● Regular</span> 
-                  <span style={{ color: COLOR_SCHEME.warning }}> ● New</span> 
-                  <span style={{ color: COLOR_SCHEME.danger }}> ● Occasional</span>
+                  Data Types: <span style={{ color: COLOR_SCHEME.success }}>● Sales (Bar)</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Target (Bar)</span> 
+                  <span style={{ color: COLOR_SCHEME.danger }}> ● Growth % (Line)</span>
                 </div>
               </div>
             </>
@@ -715,153 +982,255 @@ const ReportsEnhanced: React.FC = () => {
         const totalRev = monthly.reduce((s,m)=> s+m.revenue,0);
         const totalExp = monthly.reduce((s,m)=> s+m.expenses,0);
         const topExpense = [...expenseCategories].sort((a,b)=> b.amount-a.amount)[0];
-        const renderPieLabel = ({ name, value, percent }: any) => `${name}: Rs. ${value.toLocaleString('en-IN')} (${(percent*100).toFixed(0)}%)`;
+        
+        // Enhanced financial data for different chart types
+        const profitLossData = monthly.map(m => ({
+          ...m,
+          grossProfit: m.revenue * 0.6,
+          netProfit: m.profit,
+          profitMargin: m.revenue > 0 ? (m.profit / m.revenue * 100) : 0
+        }));
+
+        const cumulativeCashFlow = cashFlow.map((item, index) => ({
+          ...item,
+          cumulative: cashFlow.slice(0, index + 1).reduce((sum, cf) => sum + cf.net, 0)
+        }));
+
         return renderSection(
           'financial-charts',
           '📈',
-          'Financial Overview — Analytics',
+          'Financial Overview — Strategic Chart Selection',
           grid(
             <>
+              {/* STACKED COLUMN CHART - Perfect for Revenue vs Expenses Comparison */}
               <div className="chart-container">
-                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>💵 Revenue vs Expenses</h4>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  📊 Revenue vs Expenses Breakdown
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Stacked Column - Best for component comparison)
+                  </span>
+                </h4>
                 <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={monthly}>
+                  <ComposedChart data={monthly} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
                     <XAxis dataKey="month" stroke={chartConfig.textColor} fontSize={12} />
                     <YAxis stroke={chartConfig.textColor} fontSize={12} />
-                    <Tooltip {...chartConfig.tooltip} />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      iconType="rect"
-                      formatter={(value: string) => 
-                        value.includes('Revenue') ? `${value} - 🟢Green=Income` :
-                        value.includes('Expenses') ? `${value} - 🔴Red=Costs` : 
-                        `${value} - Color Guide: 🟢Green=Income, 🔴Red=Costs`
-                      }
+                    <Tooltip 
+                      formatter={(value: any, name: any) => [`₹${value.toLocaleString('en-IN')}`, name]}
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px'
+                      }}
                     />
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
                     <Bar 
                       dataKey="revenue" 
                       fill={COLOR_SCHEME.success}
                       name="Revenue (₹)"
                       radius={[4,4,0,0]}
-                      stroke={COLOR_SCHEME.success}
-                      strokeWidth={1}
+                      fillOpacity={0.8}
                     />
                     <Bar 
                       dataKey="expenses" 
                       fill={COLOR_SCHEME.danger}
                       name="Expenses (₹)"
                       radius={[4,4,0,0]}
-                      stroke={COLOR_SCHEME.danger}
-                      strokeWidth={1}
+                      fillOpacity={0.8}
                     />
-                  </BarChart>
+                    <Line 
+                      type="monotone" 
+                      dataKey="profit" 
+                      stroke={COLOR_SCHEME.primary}
+                      strokeWidth={4}
+                      dot={{ fill: COLOR_SCHEME.primary, strokeWidth: 2, r: 6 }}
+                      name="Net Profit (₹)"
+                    />
+                  </ComposedChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
-                  Summary: Total Revenue Rs. {totalRev.toLocaleString('en-IN')} · Total Expenses Rs. {totalExp.toLocaleString('en-IN')} · Net Rs. {(totalRev-totalExp).toLocaleString('en-IN')}
+                  📊 <strong>Why Combined Chart:</strong> Perfect for showing revenue/expense bars with profit trend line
                   <br />
-                  <span style={{ color: COLOR_SCHEME.success }}>● Revenue (Income)</span> vs <span style={{ color: COLOR_SCHEME.danger }}>● Expenses (Outgoing)</span>
+                  Summary: Total Revenue ₹{totalRev.toLocaleString('en-IN')} · Expenses ₹{totalExp.toLocaleString('en-IN')} · 
+                  Net ₹{(totalRev-totalExp).toLocaleString('en-IN')}
                 </div>
               </div>
+
+              {/* PIE CHART - Perfect for Expense Distribution */}
               <div className="chart-container">
-                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>🧾 Expense Categories</h4>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🥧 Expense Distribution
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Pie Chart - Best for expense proportions)
+                  </span>
+                </h4>
                 <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={expenseCategories}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
-                    <XAxis 
-                      dataKey="category" 
-                      stroke={chartConfig.textColor} 
-                      fontSize={12}
-                      interval={0} 
-                      angle={-45} 
-                      textAnchor="end" 
-                      height={80}
-                    />
-                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
-                    <Tooltip {...chartConfig.tooltip} />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      iconType="rect"
-                      formatter={(value: string) => `${value} - Color Guide: 🔴Red=High Priority, 🟠Orange=Medium, 🔵Blue=Regular, 🟢Green=Low Priority`}
-                    />
-                    <Bar 
-                      dataKey="amount" 
-                      name="Expense Amount (₹)"
-                      radius={[6,6,0,0]}
-                      strokeWidth={1}
+                  <PieChart>
+                    <Pie
+                      data={expenseCategories}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ category, percent, amount }) => `${category}: ₹${amount.toLocaleString('en-IN')} (${((percent || 0) * 100).toFixed(1)}%)`}
+                      outerRadius={120}
+                      innerRadius={40}
+                      fill="#8884d8"
+                      dataKey="amount"
+                      stroke="rgba(255,255,255,0.8)"
+                      strokeWidth={2}
                     >
                       {expenseCategories.map((entry, index) => {
-                        // Expense category color coding (using only 4 colors)
                         const expenseColors = [
-                          COLOR_SCHEME.danger,    // High priority expenses - Red
-                          COLOR_SCHEME.warning,   // Medium priority expenses - Orange  
-                          COLOR_SCHEME.primary,   // Regular expenses - Blue
-                          COLOR_SCHEME.success,   // Low priority expenses - Green
+                          COLOR_SCHEME.danger,    // COGS - Red (Highest priority)
+                          COLOR_SCHEME.warning,   // Operations - Orange (Medium)
+                          COLOR_SCHEME.primary,   // Marketing - Blue (Regular)
+                          COLOR_SCHEME.success,   // Admin - Green (Lower priority)
                         ];
                         return (
                           <Cell 
-                            key={`cell-${index}`} 
+                            key={`pie-expense-${index}`} 
                             fill={expenseColors[index % expenseColors.length]}
-                            stroke={expenseColors[index % expenseColors.length]}
                           />
                         );
                       })}
-                    </Bar>
-                  </BarChart>
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: any, name: any) => [`₹${value.toLocaleString('en-IN')}`, name]}
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px'
+                      }}
+                    />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '12px' }}
+                    />
+                  </PieChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
-                  Summary: Top expense — {topExpense?.category} (Rs. {topExpense?.amount.toLocaleString('en-IN')})
+                  🥧 <strong>Why Pie Chart:</strong> Perfect for showing expense category proportions and budget allocation
                   <br />
-                  Categories: <span style={{ color: COLOR_SCHEME.danger }}>● High Priority</span> 
+                  Top Expense: {topExpense?.category} (₹{topExpense?.amount.toLocaleString('en-IN')}) · 
+                  <span style={{ color: COLOR_SCHEME.danger }}>● High</span> 
                   <span style={{ color: COLOR_SCHEME.warning }}> ● Medium</span> 
                   <span style={{ color: COLOR_SCHEME.primary }}> ● Regular</span> 
-                  <span style={{ color: COLOR_SCHEME.success }}> ● Low Priority</span>
+                  <span style={{ color: COLOR_SCHEME.success }}> ● Low</span>
                 </div>
               </div>
+
+              {/* LINE CHART - Perfect for Cash Flow Trends */}
               <div className="chart-container">
-                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>💧 Cash Flow (Net)</h4>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  💧 Cash Flow Analysis
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Line Chart - Best for cash flow trends)
+                  </span>
+                </h4>
                 <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={cashFlow}>
+                  <LineChart data={cumulativeCashFlow} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
                     <XAxis dataKey="month" stroke={chartConfig.textColor} fontSize={12} />
                     <YAxis stroke={chartConfig.textColor} fontSize={12} />
-                    <Tooltip {...chartConfig.tooltip} />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      iconType="rect"
-                      formatter={(value: string) => `${value} - Color Guide: 🟢Green=Positive Flow, 🔴Red=Negative Flow`}
+                    <Tooltip 
+                      formatter={(value: any, name: any) => [`₹${value.toLocaleString('en-IN')}`, name]}
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px'
+                      }}
                     />
-                    <Bar 
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    <Line 
+                      type="monotone" 
                       dataKey="net" 
-                      name="Net Cash Flow (₹)"
-                      radius={[6,6,0,0]}
-                      strokeWidth={1}
-                    >
-                      {cashFlow.map((entry, index) => {
-                        // Cash flow color coding based on positive/negative
-                        let color = COLOR_SCHEME.primary;
-                        if (entry.net > 0) {
-                          color = entry.net > 50000 ? COLOR_SCHEME.success : COLOR_SCHEME.primary; // Positive flow
-                        } else {
-                          color = COLOR_SCHEME.danger; // Negative flow
-                        }
-                        return (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={color}
-                            stroke={color}
-                          />
-                        );
-                      })}
-                    </Bar>
-                  </BarChart>
+                      stroke={COLOR_SCHEME.primary}
+                      strokeWidth={4}
+                      dot={{ fill: COLOR_SCHEME.primary, strokeWidth: 2, r: 6 }}
+                      activeDot={{ r: 8, stroke: COLOR_SCHEME.primary, strokeWidth: 3 }}
+                      name="Monthly Cash Flow (₹)"
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="cumulative" 
+                      stroke={COLOR_SCHEME.success}
+                      strokeWidth={3}
+                      strokeDasharray="8 8"
+                      dot={{ fill: COLOR_SCHEME.success, strokeWidth: 2, r: 4 }}
+                      name="Cumulative Cash Flow (₹)"
+                    />
+                  </LineChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
-                  Summary: Best month — {cashFlow.reduce((a,b)=> a.net>b.net?a:b, cashFlow[0])?.month}
+                  💧 <strong>Why Line Chart:</strong> Perfect for tracking cash flow patterns, trends, and cumulative position
                   <br />
-                  Flow Status: <span style={{ color: COLOR_SCHEME.success }}>● Strong Positive</span> 
-                  <span style={{ color: COLOR_SCHEME.primary }}> ● Positive</span> 
-                  <span style={{ color: COLOR_SCHEME.danger }}> ● Negative</span>
+                  Best Month: {cashFlow.reduce((a,b)=> a.net>b.net?a:b, cashFlow[0])?.month} · 
+                  <span style={{ color: COLOR_SCHEME.primary }}>● Monthly Flow</span> 
+                  <span style={{ color: COLOR_SCHEME.success }}> ● Cumulative (Dashed)</span>
+                </div>
+              </div>
+
+              {/* WATERFALL-STYLE CHART - Perfect for Profit Analysis */}
+              <div className="chart-container">
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  📈 Profit Margin Analysis
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Multi-metric Chart - Best for profitability trends)
+                  </span>
+                </h4>
+                <ResponsiveContainer width="100%" height={400}>
+                  <ComposedChart data={profitLossData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
+                    <XAxis dataKey="month" stroke={chartConfig.textColor} fontSize={12} />
+                    <YAxis yAxisId="amount" stroke={chartConfig.textColor} fontSize={12} />
+                    <YAxis yAxisId="percent" orientation="right" stroke={chartConfig.textColor} fontSize={12} />
+                    <Tooltip 
+                      formatter={(value: any, name: any) => {
+                        if (name.includes('Margin')) return [`${value.toFixed(1)}%`, name];
+                        return [`₹${value.toLocaleString('en-IN')}`, name];
+                      }}
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px'
+                      }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    <Bar 
+                      yAxisId="amount"
+                      dataKey="grossProfit" 
+                      fill={COLOR_SCHEME.success}
+                      name="Gross Profit (₹)"
+                      radius={[4,4,0,0]}
+                      fillOpacity={0.7}
+                    />
+                    <Bar 
+                      yAxisId="amount"
+                      dataKey="netProfit" 
+                      fill={COLOR_SCHEME.primary}
+                      name="Net Profit (₹)"
+                      radius={[4,4,0,0]}
+                      fillOpacity={0.8}
+                    />
+                    <Line 
+                      yAxisId="percent"
+                      type="monotone" 
+                      dataKey="profitMargin" 
+                      stroke={COLOR_SCHEME.warning}
+                      strokeWidth={4}
+                      dot={{ fill: COLOR_SCHEME.warning, strokeWidth: 2, r: 6 }}
+                      name="Profit Margin (%)"
+                    />
+                  </ComposedChart>
+                </ResponsiveContainer>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  📈 <strong>Why Multi-metric Chart:</strong> Perfect for analyzing profitability with both amounts and percentages
+                  <br />
+                  Profitability: <span style={{ color: COLOR_SCHEME.success }}>● Gross Profit</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Net Profit</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Margin %</span>
                 </div>
               </div>
             </>
@@ -872,79 +1241,147 @@ const ReportsEnhanced: React.FC = () => {
       if (type === 'gst') {
         const { monthlyGST, rateDistribution, compliance } = getGSTDatasets();
         const totalCollected = monthlyGST.reduce((s,m)=> s+m.collected,0);
-        const renderPieLabel = ({ name, value, percent }: any) => `${name}: Rs. ${value.toLocaleString('en-IN')} (${(percent*100).toFixed(0)}%)`;
+        
+        // Enhanced GST data for different chart types
+        const gstTrendData = monthlyGST.map((item, index) => ({
+          ...item,
+          netLiability: item.collected - item.paid,
+          complianceRate: 85 + (index * 2) // Sample compliance rate
+        }));
+
+        const complianceRadarData = [
+          {
+            metric: 'Filing',
+            score: 98,
+            maxScore: 100
+          },
+          {
+            metric: 'Returns',
+            score: 95,
+            maxScore: 100
+          },
+          {
+            metric: 'ITC',
+            score: 92,
+            maxScore: 100
+          },
+          {
+            metric: 'Documentation',
+            score: 96,
+            maxScore: 100
+          },
+          {
+            metric: 'Payments',
+            score: 94,
+            maxScore: 100
+          }
+        ];
+
         return renderSection(
           'gst-charts',
           '🧾',
-          'Tax & Compliance — Analytics',
+          'Tax & Compliance — Regulatory Chart Selection',
           grid(
             <>
+              {/* AREA CHART - Perfect for GST Trend Analysis */}
               <div className="chart-container">
-                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📅 Monthly GST Trend</h4>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  📈 GST Collection Trends
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Area Chart - Best for tax trends over time)
+                  </span>
+                </h4>
                 <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={monthlyGST}>
+                  <AreaChart data={gstTrendData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <defs>
+                      <linearGradient id="collectedGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={COLOR_SCHEME.success} stopOpacity={0.8}/>
+                        <stop offset="100%" stopColor={COLOR_SCHEME.success} stopOpacity={0.2}/>
+                      </linearGradient>
+                      <linearGradient id="liabilityGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={COLOR_SCHEME.warning} stopOpacity={0.6}/>
+                        <stop offset="100%" stopColor={COLOR_SCHEME.warning} stopOpacity={0.1}/>
+                      </linearGradient>
+                      <linearGradient id="paidGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={COLOR_SCHEME.primary} stopOpacity={0.6}/>
+                        <stop offset="100%" stopColor={COLOR_SCHEME.primary} stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
                     <XAxis dataKey="month" stroke={chartConfig.textColor} fontSize={12} />
                     <YAxis stroke={chartConfig.textColor} fontSize={12} />
-                    <Tooltip {...chartConfig.tooltip} />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      iconType="rect"
-                      formatter={(value: string) => 
-                        value.includes('Collected') ? `${value} - 🟢Green=Tax Revenue` :
-                        value.includes('Paid') ? `${value} - 🔵Blue=Tax Payments` : 
-                        `${value} - Color Guide: 🟢Green=Revenue, 🔵Blue=Payments`
-                      }
+                    <Tooltip 
+                      formatter={(value: any, name: any) => [`₹${value.toLocaleString('en-IN')}`, name]}
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px'
+                      }}
                     />
-                    <Bar 
+                    <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    <Area 
+                      type="monotone" 
                       dataKey="collected" 
-                      fill={COLOR_SCHEME.success}
-                      name="GST Collected (₹)"
-                      radius={[4,4,0,0]}
+                      stackId="1"
                       stroke={COLOR_SCHEME.success}
-                      strokeWidth={1}
+                      fill="url(#collectedGradient)"
+                      strokeWidth={3}
+                      name="GST Collected (₹)"
                     />
-                    <Bar 
+                    <Area 
+                      type="monotone" 
+                      dataKey="paid" 
+                      stackId="2"
+                      stroke={COLOR_SCHEME.primary}
+                      fill="url(#paidGradient)"
+                      strokeWidth={2}
+                      name="GST Paid (₹)"
+                    />
+                    <Area 
+                      type="monotone" 
                       dataKey="liability" 
-                      fill={COLOR_SCHEME.warning}
-                      name="GST Liability (₹)"
-                      radius={[4,4,0,0]}
+                      stackId="3"
                       stroke={COLOR_SCHEME.warning}
-                      strokeWidth={1}
+                      fill="url(#liabilityGradient)"
+                      strokeWidth={2}
+                      name="GST Liability (₹)"
                     />
-                  </BarChart>
+                  </AreaChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
-                  Summary: GST Collected (6 mo) Rs. {totalCollected.toLocaleString('en-IN')}
+                  📈 <strong>Why Area Chart:</strong> Perfect for showing GST collection trends and cumulative tax obligations
                   <br />
-                  <span style={{ color: COLOR_SCHEME.success }}>● GST Collected</span> vs <span style={{ color: COLOR_SCHEME.warning }}>● GST Liability</span>
+                  Total Collected: ₹{totalCollected.toLocaleString('en-IN')} · 
+                  <span style={{ color: COLOR_SCHEME.success }}>● Collected</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Paid</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Liability</span>
                 </div>
               </div>
+
+              {/* DONUT CHART - Perfect for GST Rate Distribution */}
               <div className="chart-container">
-                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>📊 GST Rate Distribution</h4>
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🍩 GST Rate Structure
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Donut Chart - Best for rate distribution)
+                  </span>
+                </h4>
                 <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={rateDistribution}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={chartConfig.gridColor} />
-                    <XAxis 
-                      dataKey="rate" 
-                      stroke={chartConfig.textColor} 
-                      fontSize={12}
-                    />
-                    <YAxis stroke={chartConfig.textColor} fontSize={12} />
-                    <Tooltip {...chartConfig.tooltip} />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      iconType="rect"
-                      formatter={(value: string) => `${value} - Color Guide: 🟢Green=0%, 🔵Blue=5%, 🟠Orange=12-18%, 🔴Red=28%`}
-                    />
-                    <Bar 
-                      dataKey="amount" 
-                      name="Tax Amount by Rate (₹)"
-                      radius={[6,6,0,0]}
-                      strokeWidth={1}
+                  <PieChart>
+                    <Pie
+                      data={rateDistribution}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ rate, percent, amount }) => `${rate}: ₹${amount.toLocaleString('en-IN')} (${((percent || 0) * 100).toFixed(1)}%)`}
+                      outerRadius={120}
+                      innerRadius={60}
+                      fill="#8884d8"
+                      dataKey="amount"
+                      stroke="rgba(255,255,255,0.9)"
+                      strokeWidth={3}
                     >
                       {rateDistribution.map((entry, index) => {
-                        // GST rate color coding (using only 4 colors)
                         const rate = parseFloat(entry.rate.replace('%', ''));
                         let color = COLOR_SCHEME.primary;
                         if (rate === 0) color = COLOR_SCHEME.success;      // 0% - Green (Exempt)
@@ -953,76 +1390,168 @@ const ReportsEnhanced: React.FC = () => {
                         else color = COLOR_SCHEME.danger;                  // 28% - Red (Highest rate)
                         
                         return (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={color}
-                            stroke={color}
-                          />
+                          <Cell key={`donut-gst-${index}`} fill={color} />
                         );
                       })}
-                    </Bar>
-                  </BarChart>
+                    </Pie>
+                    <Tooltip 
+                      formatter={(value: any, name: any) => [`₹${value.toLocaleString('en-IN')}`, `${name} Tax`]}
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px'
+                      }}
+                    />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      iconType="circle"
+                      wrapperStyle={{ fontSize: '12px' }}
+                    />
+                  </PieChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
-                  GST Rates: <span style={{ color: COLOR_SCHEME.success }}>● 0% (Exempt)</span> 
-                  <span style={{ color: COLOR_SCHEME.primary }}> ● 5% (Low)</span> 
-                  <span style={{ color: COLOR_SCHEME.warning }}> ● 12-18% (Medium-High)</span> 
-                  <span style={{ color: COLOR_SCHEME.danger }}> ● 28% (Highest)</span>
+                  🍩 <strong>Why Donut Chart:</strong> Perfect for visualizing GST rate structure and tax distribution
+                  <br />
+                  Rate Structure: <span style={{ color: COLOR_SCHEME.success }}>● 0% (Exempt)</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● 5% (Essential)</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● 12-18% (Standard)</span> 
+                  <span style={{ color: COLOR_SCHEME.danger }}> ● 28% (Luxury)</span>
                 </div>
               </div>
-              <div>
-                <h4 style={{ marginBottom: '16px', color: 'var(--text)' }}>✅ Compliance Metrics</h4>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={compliance}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis 
+
+              {/* RADAR CHART - Perfect for Compliance Metrics */}
+              <div className="chart-container">
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  🎯 Compliance Score Matrix
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Radar Chart - Best for multi-metric compliance)
+                  </span>
+                </h4>
+                <ResponsiveContainer width="100%" height={400}>
+                  <RadarChart data={complianceRadarData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+                    <PolarGrid stroke={chartConfig.gridColor} />
+                    <PolarAngleAxis 
                       dataKey="metric" 
-                      stroke="var(--text-muted)" 
-                      fontSize={12}
-                      interval={0} 
-                      angle={-30} 
-                      textAnchor="end" 
-                      height={60}
+                      tick={{ fontSize: 12, fill: chartConfig.textColor }}
                     />
-                    <YAxis stroke="var(--text-muted)" fontSize={12} />
-                    <Tooltip />
-                    <Legend 
-                      wrapperStyle={{ paddingTop: '20px' }}
-                      iconType="rect"
-                      formatter={(value: string) => `${value} - Color Guide: 🟢Green=Excellent(90%+), 🔵Blue=Good(75%+), 🟠Orange=Satisfactory(60%+), 🔴Red=Critical(<60%)`}
+                    <PolarRadiusAxis 
+                      tick={{ fontSize: 10, fill: chartConfig.textColor }}
+                      domain={[0, 100]}
                     />
-                    <Bar 
-                      dataKey="score" 
-                      name="Compliance Score (%)"
-                      radius={[6,6,0,0]}
-                      strokeWidth={1}
-                    >
-                      {compliance.map((entry, index) => {
-                        // Compliance score color coding (using only 4 colors)
-                        let color = COLOR_SCHEME.primary;
-                        if (entry.score >= 90) color = COLOR_SCHEME.success;      // Excellent - Green
-                        else if (entry.score >= 75) color = COLOR_SCHEME.primary; // Good - Blue
-                        else if (entry.score >= 60) color = COLOR_SCHEME.warning; // Satisfactory - Orange
-                        else color = COLOR_SCHEME.danger;                         // Critical - Red
-                        
-                        return (
-                          <Cell 
-                            key={`cell-${index}`} 
-                            fill={color}
-                            stroke={color}
-                          />
-                        );
-                      })}
-                    </Bar>
-                  </BarChart>
+                    <Tooltip 
+                      formatter={(value: any, name: any) => [`${value}%`, name]}
+                      contentStyle={{
+                        background: chartConfig.tooltipBg,
+                        border: `1px solid ${chartConfig.tooltipBorder}`,
+                        borderRadius: '12px'
+                      }}
+                    />
+                    <Radar
+                      name="Current Score"
+                      dataKey="score"
+                      stroke={COLOR_SCHEME.success}
+                      fill={COLOR_SCHEME.success}
+                      fillOpacity={0.4}
+                      strokeWidth={3}
+                      dot={{ r: 6, strokeWidth: 2, fill: COLOR_SCHEME.success }}
+                    />
+                    <Radar
+                      name="Target Score"
+                      dataKey="maxScore"
+                      stroke={COLOR_SCHEME.primary}
+                      fill={COLOR_SCHEME.primary}
+                      fillOpacity={0.1}
+                      strokeWidth={2}
+                      strokeDasharray="8 8"
+                    />
+                  </RadarChart>
                 </ResponsiveContainer>
                 <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
-                  Summary: Average compliance score {Math.round(compliance.reduce((s,c)=> s+c.score,0)/Math.max(1,compliance.length))}%
+                  🎯 <strong>Why Radar Chart:</strong> Perfect for visualizing compliance performance across multiple regulatory areas
                   <br />
-                  Compliance Levels: <span style={{ color: COLOR_SCHEME.success }}>● Excellent (90%+)</span> 
-                  <span style={{ color: COLOR_SCHEME.primary }}> ● Good (75%+)</span> 
-                  <span style={{ color: COLOR_SCHEME.warning }}> ● Satisfactory (60%+)</span> 
-                  <span style={{ color: COLOR_SCHEME.danger }}> ● Critical (&lt;60%)</span>
+                  Average Score: {Math.round(complianceRadarData.reduce((s,c)=> s+c.score,0)/complianceRadarData.length)}% · 
+                  <span style={{ color: COLOR_SCHEME.success }}>● Current</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Target (Dashed)</span>
+                </div>
+              </div>
+
+              {/* PROGRESS BAR CHART - Perfect for Individual Compliance Metrics */}
+              <div className="chart-container">
+                <h4 style={{ marginBottom: '16px', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  ✅ Detailed Compliance Status
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                    (Horizontal Progress - Best for individual metrics)
+                  </span>
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', padding: '20px 0' }}>
+                  {compliance.map((item, index) => {
+                    let color = COLOR_SCHEME.primary;
+                    if (item.score >= 95) color = COLOR_SCHEME.success;      // Excellent - Green
+                    else if (item.score >= 85) color = COLOR_SCHEME.primary; // Good - Blue
+                    else if (item.score >= 70) color = COLOR_SCHEME.warning; // Satisfactory - Orange
+                    else color = COLOR_SCHEME.danger;                        // Critical - Red
+
+                    return (
+                      <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ 
+                          minWidth: '140px', 
+                          fontSize: '14px', 
+                          fontWeight: '500',
+                          color: 'var(--text)'
+                        }}>
+                          {item.metric}
+                        </div>
+                        <div style={{ 
+                          flex: 1, 
+                          height: '20px', 
+                          background: chartConfig.gridColor,
+                          borderRadius: '10px',
+                          overflow: 'hidden',
+                          position: 'relative'
+                        }}>
+                          <div style={{
+                            width: `${item.score}%`,
+                            height: '100%',
+                            background: `linear-gradient(90deg, ${color}, ${color}aa)`,
+                            borderRadius: '10px',
+                            transition: 'width 0.8s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'flex-end',
+                            paddingRight: '8px'
+                          }}>
+                            <span style={{ 
+                              fontSize: '11px', 
+                              fontWeight: '600', 
+                              color: 'white',
+                              textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                            }}>
+                              {item.score}%
+                            </span>
+                          </div>
+                        </div>
+                        <div style={{ 
+                          minWidth: '80px', 
+                          fontSize: '12px', 
+                          color: color,
+                          fontWeight: '600'
+                        }}>
+                          {item.score >= 95 ? '🟢 Excellent' :
+                           item.score >= 85 ? '🔵 Good' :
+                           item.score >= 70 ? '🟠 Satisfactory' : '🔴 Critical'}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                  ✅ <strong>Why Progress Bars:</strong> Perfect for showing individual compliance metric performance with clear visual status
+                  <br />
+                  Status Levels: <span style={{ color: COLOR_SCHEME.success }}>● Excellent (95%+)</span> 
+                  <span style={{ color: COLOR_SCHEME.primary }}> ● Good (85%+)</span> 
+                  <span style={{ color: COLOR_SCHEME.warning }}> ● Satisfactory (70%+)</span> 
+                  <span style={{ color: COLOR_SCHEME.danger }}> ● Critical (&lt;70%)</span>
                 </div>
               </div>
             </>

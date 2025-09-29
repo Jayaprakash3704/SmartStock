@@ -36,7 +36,7 @@ const ProductForm: React.FC<{
 
   return (
     <div className="glass-card">
-      <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '20px', color: '#374151' }}>
+      <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '20px', color: 'var(--text)' }}>
         {product ? '✏️ Edit Product' : '➕ Add New Product'}
       </h3>
       <form onSubmit={handleSubmit}>
@@ -422,13 +422,13 @@ const Products: React.FC = () => {
                       <td>
                         <div>
                           <div style={{ fontWeight: '600', marginBottom: '4px' }}>{product.name}</div>
-                          <div style={{ fontSize: '12px', color: '#6b7280' }}>{product.description}</div>
+                          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{product.description}</div>
                         </div>
                       </td>
                       <td>
                         <span className="badge badge-success">{product.category}</span>
                       </td>
-                      <td style={{ fontWeight: '600', color: '#059669' }}>
+                      <td style={{ fontWeight: '600', color: 'var(--chart-green)' }}>
                         {formatCurrency(product.price)}
                       </td>
                       <td style={{ fontWeight: '600' }}>{product.quantity}</td>
@@ -485,11 +485,11 @@ const Products: React.FC = () => {
             <div style={{ 
               textAlign: 'center', 
               padding: '48px', 
-              color: '#6b7280' 
+              color: 'var(--text-muted)' 
             }}>
               <div style={{ fontSize: '48px', marginBottom: '16px' }}>📦</div>
               <h3 style={{ fontSize: '18px', marginBottom: '8px' }}>No products found</h3>
-              <p style={{ marginBottom: '24px', color: '#6b7280', fontSize: '16px' }}>
+              <p style={{ marginBottom: '24px', color: 'var(--text-muted)', fontSize: '16px' }}>
                 {searchTerm || selectedCategory 
                   ? 'Try adjusting your search or filter criteria to find products'
                   : 'Get started by adding your first product to build your inventory'

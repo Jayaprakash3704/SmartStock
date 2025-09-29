@@ -68,6 +68,24 @@
     --chart-grid: #e2e8f0;
     --chart-tooltip-bg: #ffffff;
     --chart-tooltip-border: #e2e8f0;
+    
+    /* Vibrant chart colors for light mode */
+    --chart-blue: #3b82f6;
+    --chart-green: #10b981;
+    --chart-red: #ef4444;
+    --chart-yellow: #f59e0b;
+    --chart-purple: #8b5cf6;
+    --chart-cyan: #06b6d4;
+    --chart-pink: #ec4899;
+    --chart-orange: #f97316;
+    --chart-indigo: #6366f1;
+    --chart-teal: #14b8a6;
+    
+    /* Status surface colors for light mode */
+    --surface-success: #d1fae5;
+    --surface-warning: #fef3c7;
+    --surface-danger: #fee2e2;
+    --surface-info: #f3e8ff;
 }
 
 [data-theme="dark"] {
@@ -119,6 +137,24 @@
     --chart-grid: #333333;
     --chart-tooltip-bg: #262626;
     --chart-tooltip-border: #404040;
+    
+    /* Vibrant chart colors for dark mode - enhanced brightness */
+    --chart-blue: #60a5fa;
+    --chart-green: #34d399;
+    --chart-red: #f87171;
+    --chart-yellow: #fbbf24;
+    --chart-purple: #a78bfa;
+    --chart-cyan: #22d3ee;
+    --chart-pink: #f472b6;
+    --chart-orange: #fb923c;
+    --chart-indigo: #818cf8;
+    --chart-teal: #2dd4bf;
+    
+    /* Status surface colors for dark mode */
+    --surface-success: #0f3d26;
+    --surface-warning: #3d2b00;
+    --surface-danger: #3d0f0f;
+    --surface-info: #2d1a3d;
 }
 
 body {
@@ -132,7 +168,6 @@ body {
     position: relative;
     overflow-x: hidden;
     overflow-y: auto;
-    scroll-behavior: smooth;
 }
 
 /* Add subtle background pattern */
@@ -178,7 +213,6 @@ body::after {
     min-height: calc(100vh - 80px);
     overflow-y: auto;
     overflow-x: hidden;
-    scroll-behavior: smooth;
 }
 
 /* Enhanced page header styling with better responsive behavior */
@@ -191,10 +225,8 @@ body::after {
     gap: 16px;
     padding: 16px 0;
     border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
+    position: relative;
     background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
     z-index: 10;
     border-radius: 12px;
     margin-bottom: 24px;

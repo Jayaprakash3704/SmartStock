@@ -70,11 +70,11 @@ export const formatDate = (date: Date): string => {
 
 // Stock level helpers
 export const getStockStatus = (current: number, min?: number, max?: number) => {
-  if (current === 0) return { status: 'critical', color: '#ef4444', label: 'Out of Stock' };
-  if (min && current <= min) return { status: 'critical', color: '#ef4444', label: 'Critical' };
-  if (min && current <= min * 1.5) return { status: 'low', color: '#f59e0b', label: 'Low Stock' };
-  if (max && current >= max) return { status: 'overstock', color: '#3b82f6', label: 'Overstock' };
-  return { status: 'good', color: '#10b981', label: 'Good Stock' };
+  if (current === 0) return { status: 'critical', color: 'var(--chart-red)', label: 'Out of Stock' };
+  if (min && current <= min) return { status: 'critical', color: 'var(--chart-red)', label: 'Critical' };
+  if (min && current <= min * 1.5) return { status: 'low', color: 'var(--chart-yellow)', label: 'Low Stock' };
+  if (max && current >= max) return { status: 'overstock', color: 'var(--chart-blue)', label: 'Overstock' };
+  return { status: 'good', color: 'var(--chart-green)', label: 'Good Stock' };
 };
 
 export const validateInput = (input: string): boolean => {

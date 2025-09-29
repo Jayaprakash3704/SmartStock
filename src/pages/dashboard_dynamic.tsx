@@ -20,14 +20,36 @@ import { useCurrency } from '../contexts/CurrencyContext';
 import { useDashboard, useNotifications, usePerformanceMonitor } from '../hooks/useDashboard';
 import { formatIndianNumber } from '../utils/helpers';
 
-// Enhanced 4-color scheme with better semantic meanings
-const COLOR_SCHEME = {
-  success: '#10b981',      // Emerald Green - High performance, good values
-  warning: '#f59e0b',      // Amber Orange - Medium performance, caution
-  danger: '#ef4444',       // Red - Low performance, urgent attention  
-  primary: '#3b82f6',      // Blue - Primary data, normal values
-  info: '#06b6d4',         // Cyan - Information, secondary data
+// Utility function to get computed CSS variable values
+const getCSSVariable = (variable: string): string => {
+  if (typeof document !== 'undefined') {
+    return getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+  }
+  return variable; // fallback to variable name if document is not available
 };
+
+// Enhanced color scheme using CSS variables for theme adaptation
+const COLOR_SCHEME = {
+  success: 'var(--chart-green)',
+  warning: 'var(--chart-yellow)',
+  danger: 'var(--chart-red)',
+  primary: 'var(--chart-blue)',
+  info: 'var(--chart-cyan)',
+};
+
+// Vibrant chart color palette that adapts to themes
+const getChartColors = () => [
+  getCSSVariable('--chart-blue'),
+  getCSSVariable('--chart-green'),
+  getCSSVariable('--chart-purple'),
+  getCSSVariable('--chart-orange'),
+  getCSSVariable('--chart-cyan'),
+  getCSSVariable('--chart-pink'),
+  getCSSVariable('--chart-yellow'),
+  getCSSVariable('--chart-red'),
+  getCSSVariable('--chart-indigo'),
+  getCSSVariable('--chart-teal')
+];
 
 const Dashboard: React.FC = () => {
   const { formatCurrency } = useCurrency();
@@ -109,8 +131,8 @@ const Dashboard: React.FC = () => {
             border-radius: 16px;
             border: none;
             cursor: pointer;
-            color: #fff;
-            background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 25%, #45b7d1 50%, #96ceb4 75%, #ffeaa7 100%);
+            color: white;
+            background: var(--gradient-rainbow);
             background-size: 400% 400%;
             animation: rainbowFlow 3s ease-in-out infinite;
             box-shadow: 0 8px 32px rgba(255, 107, 107, 0.4), 0 4px 16px rgba(78, 205, 196, 0.3);
@@ -268,7 +290,52 @@ const Dashboard: React.FC = () => {
             50% { opacity: 0.7; }
           }
           
-          .chart-container { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; box-shadow: var(--shadow); transition: all 0.2s ease; height: 100%; }
+          .chart-container { 
+            background: var(--surface); 
+            border: 1px solid var(--border); 
+            border-radius: 20px; 
+            padding: 24px; 
+            box-shadow: var(--shadow); 
+            transition: all 0.3s ease; 
+            height: 100%; 
+            position: relative;
+            overflow: hidden;
+          }
+          
+          .chart-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, 
+              ${COLOR_SCHEME.primary} 0%, 
+              ${COLOR_SCHEME.success} 25%, 
+              ${COLOR_SCHEME.warning} 50%, 
+              ${COLOR_SCHEME.danger} 75%, 
+              ${COLOR_SCHEME.info} 100%
+            );
+            opacity: 0;
+            transition: opacity 0.3s ease;
+          }
+          
+          .chart-container:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15), 0 8px 16px rgba(0,0,0,0.1);
+          }
+          
+          .chart-container:hover::before {
+            opacity: 1;
+          }
+          
+          .chart-container h3 {
+            background: linear-gradient(135deg, var(--text) 0%, var(--text-muted) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px !important;
+          }
           
           @keyframes gentle-pulse {
             0%, 100% { 
@@ -439,43 +506,161 @@ const Dashboard: React.FC = () => {
           {/* Charts Section */}
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: '1fr 1fr', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', 
             gap: '24px', 
             marginBottom: '32px'
           }}>
-            {/* Category Distribution */}
+            {/* Category Distribution Pie Chart */}
             <div className="chart-container fade-in">
-              <h3 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>
-                📊 Category Distribution
+              <h3 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                🥧 Category Distribution
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                  (Interactive Pie Chart)
+                </span>
               </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData.categories}>
+              <ResponsiveContainer width="100%" height={320}>
+                <PieChart width={400} height={320}>
+                  <Pie
+                    data={chartData.categories}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+                    outerRadius={90}
+                    innerRadius={30}
+                    fill="#8884d8"
+                    dataKey="value"
+                    stroke="rgba(255,255,255,0.8)"
+                    strokeWidth={2}
+                  >
+                    {chartData.categories.map((entry, index) => (
+                      <Cell 
+                        key={`pie-cell-${index}`} 
+                        fill={getChartColors()[index % 10]}
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: any, name: any) => [`${value} products`, name]}
+                    contentStyle={{
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '12px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                    }}
+                  />
+                  <Legend 
+                    verticalAlign="bottom" 
+                    height={36}
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: '12px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Stock Level Status Pie Chart */}
+            <div className="chart-container fade-in">
+              <h3 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                � Stock Status Overview
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                  (Stock Health)
+                </span>
+              </h3>
+              <ResponsiveContainer width="100%" height={320}>
+                <PieChart width={400} height={320}>
+                  <Pie
+                    data={[
+                      { name: 'High Stock', value: chartData.stockLevels.filter(item => item.value >= 60).length, color: getCSSVariable('--chart-green') },
+                      { name: 'Medium Stock', value: chartData.stockLevels.filter(item => item.value >= 30 && item.value < 60).length, color: getCSSVariable('--chart-blue') },
+                      { name: 'Low Stock', value: chartData.stockLevels.filter(item => item.value >= 15 && item.value < 30).length, color: getCSSVariable('--chart-yellow') },
+                      { name: 'Critical Stock', value: chartData.stockLevels.filter(item => item.value < 15).length, color: getCSSVariable('--chart-red') }
+                    ].filter(item => item.value > 0)}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent, value }) => `${name}: ${value} (${((percent || 0) * 100).toFixed(0)}%)`}
+                    outerRadius={90}
+                    innerRadius={40}
+                    fill="#8884d8"
+                    dataKey="value"
+                    stroke="rgba(255,255,255,0.9)"
+                    strokeWidth={3}
+                  >
+                    {[
+                      { name: 'High Stock', value: chartData.stockLevels.filter(item => item.value >= 60).length, color: getCSSVariable('--chart-green') },
+                      { name: 'Medium Stock', value: chartData.stockLevels.filter(item => item.value >= 30 && item.value < 60).length, color: getCSSVariable('--chart-blue') },
+                      { name: 'Low Stock', value: chartData.stockLevels.filter(item => item.value >= 15 && item.value < 30).length, color: getCSSVariable('--chart-yellow') },
+                      { name: 'Critical Stock', value: chartData.stockLevels.filter(item => item.value < 15).length, color: getCSSVariable('--chart-red') }
+                    ].filter(item => item.value > 0).map((entry, index) => (
+                      <Cell key={`status-pie-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: any, name: any) => [`${value} items`, name]}
+                    contentStyle={{
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '12px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                    }}
+                  />
+                  <Legend 
+                    verticalAlign="bottom" 
+                    height={36}
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: '12px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Enhanced Bar Chart - Category Performance */}
+            <div className="chart-container fade-in">
+              <h3 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                � Category Performance
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                  (Product Count)
+                </span>
+              </h3>
+              <ResponsiveContainer width="100%" height={320}>
+                <BarChart data={chartData.categories} margin={{ top: 20, right: 40, left: 40, bottom: 80 }}>
+                  <defs>
+                    <linearGradient id="categoryGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={COLOR_SCHEME.primary} stopOpacity={0.8}/>
+                      <stop offset="100%" stopColor={COLOR_SCHEME.primary} stopOpacity={0.3}/>
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
                   <XAxis 
                     dataKey="name" 
-                    fontSize={12}
+                    fontSize={11}
                     interval={0} 
                     angle={-45} 
                     textAnchor="end" 
                     height={80}
+                    stroke="var(--text-muted)"
                   />
-                  <YAxis fontSize={12} />
+                  <YAxis fontSize={11} stroke="var(--text-muted)" />
                   <Tooltip 
                     formatter={(value: any) => [`${value} products`, 'Category Count']}
-                  />
-                  <Legend
-                    iconType="rect"
-                    formatter={() => 'Category Performance - Color Guide: 🟢Green=High Volume, 🟠Orange=Medium Volume, 🔴Red=Low Volume'}
+                    contentStyle={{
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '12px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                    }}
                   />
                   <Bar 
                     dataKey="value" 
-                    radius={[6,6,0,0]}
-                    stroke="#5a67d8"
+                    radius={[8,8,0,0]}
+                    fill="url(#categoryGradient)"
+                    stroke={COLOR_SCHEME.primary}
                     strokeWidth={1}
                   >
                     {chartData.categories.map((entry, index) => (
                       <Cell 
-                        key={`cell-${index}`} 
+                        key={`bar-cell-${index}`} 
                         fill={
                           entry.value >= 25 ? COLOR_SCHEME.success :  // High category count - Green
                           entry.value >= 15 ? COLOR_SCHEME.primary :  // Good category count - Blue
@@ -489,49 +674,175 @@ const Dashboard: React.FC = () => {
               </ResponsiveContainer>
             </div>
 
-            {/* Stock Level Distribution */}
+            {/* Enhanced Area Chart - Stock Trend */}
             <div className="chart-container fade-in">
-              <h3 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600' }}>
-                📈 Stock Levels
+              <h3 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                📈 Stock Level Trends
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                  (Area Chart)
+                </span>
               </h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={chartData.stockLevels}>
+              <ResponsiveContainer width="100%" height={320}>
+                <AreaChart data={chartData.stockLevels} margin={{ top: 20, right: 40, left: 40, bottom: 80 }}>
+                  <defs>
+                    <linearGradient id="stockGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={COLOR_SCHEME.success} stopOpacity={0.8}/>
+                      <stop offset="50%" stopColor={COLOR_SCHEME.warning} stopOpacity={0.6}/>
+                      <stop offset="100%" stopColor={COLOR_SCHEME.danger} stopOpacity={0.3}/>
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
                   <XAxis 
                     dataKey="name" 
-                    fontSize={12}
+                    fontSize={11}
                     interval={0} 
                     angle={-45} 
                     textAnchor="end" 
                     height={80}
+                    stroke="var(--text-muted)"
                   />
-                  <YAxis fontSize={12} />
+                  <YAxis fontSize={11} stroke="var(--text-muted)" />
                   <Tooltip 
                     formatter={(value: any) => [`${value} units`, 'Stock Level']}
+                    contentStyle={{
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '12px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                    }}
                   />
-                  <Legend
-                    iconType="rect"
-                    formatter={() => 'Stock Status - Color Guide: 🟢Green=High Stock, 🟠Orange=Medium Stock, 🔴Red=Low Stock'}
-                  />
-                  <Bar 
+                  <Area 
+                    type="monotone" 
                     dataKey="value" 
-                    radius={[6, 6, 0, 0]}
-                    stroke="#1d4ed8"
-                    strokeWidth={1}
+                    stroke={COLOR_SCHEME.primary}
+                    strokeWidth={3}
+                    fill="url(#stockGradient)"
+                    fillOpacity={0.7}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Value Distribution Donut Chart */}
+            <div className="chart-container fade-in">
+              <h3 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                💰 Value Distribution
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                  (By Category Value)
+                </span>
+              </h3>
+              <ResponsiveContainer width="100%" height={320}>
+                <PieChart width={400} height={320}>
+                  <Pie
+                    data={topProducts.slice(0, 6).map((product, index) => ({
+                      name: product.name.length > 15 ? product.name.substring(0, 15) + '...' : product.name,
+                      value: (product as any).totalValue || (product.price * product.quantity),
+                      originalName: product.name
+                    }))}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(1)}%`}
+                    outerRadius={100}
+                    innerRadius={60}
+                    fill="#8884d8"
+                    dataKey="value"
+                    stroke="rgba(255,255,255,0.9)"
+                    strokeWidth={2}
                   >
-                    {chartData.stockLevels.map((entry, index) => (
+                    {topProducts.slice(0, 6).map((entry, index) => (
                       <Cell 
-                        key={`cell-${index}`} 
-                        fill={
-                          entry.value >= 60 ? COLOR_SCHEME.success :  // High stock - Green (Good)
-                          entry.value >= 30 ? COLOR_SCHEME.primary :  // Good stock - Blue (Normal)
-                          entry.value >= 15 ? COLOR_SCHEME.warning :  // Medium stock - Orange (Caution)
-                          COLOR_SCHEME.danger                         // Low stock - Red (Danger)
-                        }
+                        key={`value-pie-${index}`} 
+                        fill={getChartColors()[index % 6]}
                       />
                     ))}
-                  </Bar>
-                </BarChart>
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: any, name: any, props: any) => [formatCurrency(value), props.payload.originalName]}
+                    contentStyle={{
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '12px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                    }}
+                  />
+                  <Legend 
+                    verticalAlign="bottom" 
+                    height={36}
+                    iconType="circle"
+                    wrapperStyle={{ fontSize: '11px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Weekly Performance Line Chart */}
+            <div className="chart-container fade-in">
+              <h3 style={{ marginBottom: '20px', fontSize: '18px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                📅 Weekly Performance
+                <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: '400' }}>
+                  (Last 7 Days)
+                </span>
+              </h3>
+              <ResponsiveContainer width="100%" height={320}>
+                <LineChart 
+                  data={[
+                    { day: 'Mon', activities: 12, sales: 8, updates: 5 },
+                    { day: 'Tue', activities: 19, sales: 12, updates: 8 },
+                    { day: 'Wed', activities: 15, sales: 10, updates: 6 },
+                    { day: 'Thu', activities: 22, sales: 15, updates: 9 },
+                    { day: 'Fri', activities: 28, sales: 18, updates: 12 },
+                    { day: 'Sat', activities: 18, sales: 14, updates: 7 },
+                    { day: 'Sun', activities: 16, sales: 11, updates: 6 }
+                  ]}
+                  margin={{ top: 20, right: 40, left: 40, bottom: 40 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                  <XAxis 
+                    dataKey="day" 
+                    fontSize={11}
+                    stroke="var(--text-muted)"
+                  />
+                  <YAxis fontSize={11} stroke="var(--text-muted)" />
+                  <Tooltip 
+                    contentStyle={{
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '12px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                    }}
+                  />
+                  <Legend 
+                    wrapperStyle={{ fontSize: '12px' }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="activities" 
+                    stroke={COLOR_SCHEME.primary}
+                    strokeWidth={3}
+                    dot={{ fill: COLOR_SCHEME.primary, strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: COLOR_SCHEME.primary, strokeWidth: 2 }}
+                    name="Total Activities"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="sales" 
+                    stroke={COLOR_SCHEME.success}
+                    strokeWidth={3}
+                    dot={{ fill: COLOR_SCHEME.success, strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: COLOR_SCHEME.success, strokeWidth: 2 }}
+                    name="Sales Count"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="updates" 
+                    stroke={COLOR_SCHEME.warning}
+                    strokeWidth={3}
+                    dot={{ fill: COLOR_SCHEME.warning, strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6, stroke: COLOR_SCHEME.warning, strokeWidth: 2 }}
+                    name="Product Updates"
+                  />
+                </LineChart>
               </ResponsiveContainer>
             </div>
           </div>

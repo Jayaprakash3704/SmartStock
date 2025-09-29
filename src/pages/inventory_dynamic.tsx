@@ -149,9 +149,8 @@ const InventoryDynamic: React.FC = () => {
             text-align: left;
             font-weight: 600;
             font-size: 14px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+            position: relative;
+            z-index: 1;
           }
           
           .inventory-table td {

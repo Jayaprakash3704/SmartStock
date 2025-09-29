@@ -6,7 +6,6 @@ import { notificationManager } from '../services/notificationManager';
 import { AppSettings, BusinessSettings, CurrencySettings, INDIAN_CURRENCY } from '../types';
 import { useCurrency, AVAILABLE_CURRENCIES } from '../contexts/CurrencyContext';
 import { useTheme } from '../contexts/ThemeContextNew';
-import { initializeDemoData } from '../services/mockDataInitializer';
 
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -74,7 +73,6 @@ const Settings: React.FC = () => {
   });
   const [isTestingEmail, setIsTestingEmail] = useState(false);
   const [testEmail, setTestEmail] = useState(localStorage.getItem('smtp_test_to') || settings.business.email || '');
-  const [isInitializingData, setIsInitializingData] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -537,27 +535,7 @@ const Settings: React.FC = () => {
                 </div>
 
                 <div className="glass-card" style={{ padding: '20px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <h4 style={{ fontSize: '16px', fontWeight: '600', margin: 0 }}>Demo Data Management</h4>
-                    <button 
-                      className="btn-primary" 
-                      style={{ fontSize: '12px', padding: '6px 12px' }}
-                      onClick={async () => {
-                        setIsInitializingData(true);
-                        try {
-                          await initializeDemoData();
-                          notificationManager.showSuccess('Demo Data', 'Minimal demo data loaded successfully!');
-                        } catch (error) {
-                          notificationManager.showError('Demo Data', 'Failed to load demo data');
-                        } finally {
-                          setIsInitializingData(false);
-                        }
-                      }}
-                      disabled={isInitializingData}
-                    >
-                      {isInitializingData ? 'Loading...' : 'Load Demo Data'}
-                    </button>
-                  </div>
+
                   <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>
                     Load minimal demo data with 5 basic products for application demonstration
                   </p>
