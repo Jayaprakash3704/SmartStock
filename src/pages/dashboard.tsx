@@ -543,11 +543,14 @@ const Dashboard: React.FC = () => {
                   <Tooltip 
                     formatter={(value: any, name: any) => [`${value} products`, name]}
                     contentStyle={{
-                      background: 'var(--surface)',
-                      border: '1px solid var(--border)',
+                      background: 'var(--chart-tooltip-bg)',
+                      border: '1px solid var(--chart-tooltip-border)',
                       borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                      color: 'var(--chart-text)'
                     }}
+                    labelStyle={{ color: 'var(--chart-text)' }}
+                    itemStyle={{ color: 'var(--chart-text)' }}
                   />
                   <Legend 
                     verticalAlign="bottom" 
@@ -599,11 +602,14 @@ const Dashboard: React.FC = () => {
                   <Tooltip 
                     formatter={(value: any, name: any) => [`${value} items`, name]}
                     contentStyle={{
-                      background: 'var(--surface)',
-                      border: '1px solid var(--border)',
+                      background: 'var(--chart-tooltip-bg)',
+                      border: '1px solid var(--chart-tooltip-border)',
                       borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                      color: 'var(--chart-text)'
                     }}
+                    labelStyle={{ color: 'var(--chart-text)' }}
+                    itemStyle={{ color: 'var(--chart-text)' }}
                   />
                   <Legend 
                     verticalAlign="bottom" 
@@ -645,11 +651,14 @@ const Dashboard: React.FC = () => {
                   <Tooltip 
                     formatter={(value: any) => [`${value} products`, 'Category Count']}
                     contentStyle={{
-                      background: 'var(--surface)',
-                      border: '1px solid var(--border)',
+                      background: 'var(--chart-tooltip-bg)',
+                      border: '1px solid var(--chart-tooltip-border)',
                       borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                      color: 'var(--chart-text)'
                     }}
+                    labelStyle={{ color: 'var(--chart-text)' }}
+                    itemStyle={{ color: 'var(--chart-text)' }}
                   />
                   <Bar 
                     dataKey="value" 
@@ -705,11 +714,14 @@ const Dashboard: React.FC = () => {
                   <Tooltip 
                     formatter={(value: any) => [`${value} units`, 'Stock Level']}
                     contentStyle={{
-                      background: 'var(--surface)',
-                      border: '1px solid var(--border)',
+                      background: 'var(--chart-tooltip-bg)',
+                      border: '1px solid var(--chart-tooltip-border)',
                       borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                      color: 'var(--chart-text)'
                     }}
+                    labelStyle={{ color: 'var(--chart-text)' }}
+                    itemStyle={{ color: 'var(--chart-text)' }}
                   />
                   <Area 
                     type="monotone" 
@@ -760,11 +772,14 @@ const Dashboard: React.FC = () => {
                   <Tooltip 
                     formatter={(value: any, name: any, props: any) => [formatCurrency(value), props.payload.originalName]}
                     contentStyle={{
-                      background: 'var(--surface)',
-                      border: '1px solid var(--border)',
+                      background: 'var(--chart-tooltip-bg)',
+                      border: '1px solid var(--chart-tooltip-border)',
                       borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                      color: 'var(--chart-text)'
                     }}
+                    labelStyle={{ color: 'var(--chart-text)' }}
+                    itemStyle={{ color: 'var(--chart-text)' }}
                   />
                   <Legend 
                     verticalAlign="bottom" 
@@ -801,16 +816,24 @@ const Dashboard: React.FC = () => {
                   <XAxis 
                     dataKey="day" 
                     fontSize={11}
-                    stroke="var(--text-muted)"
+                    stroke="var(--chart-text)"
+                    tick={{ fill: 'var(--chart-text)' }}
                   />
-                  <YAxis fontSize={11} stroke="var(--text-muted)" />
+                  <YAxis 
+                    fontSize={11} 
+                    stroke="var(--chart-text)"
+                    tick={{ fill: 'var(--chart-text)' }}
+                  />
                   <Tooltip 
                     contentStyle={{
-                      background: 'var(--surface)',
-                      border: '1px solid var(--border)',
+                      background: 'var(--chart-tooltip-bg)',
+                      border: '1px solid var(--chart-tooltip-border)',
                       borderRadius: '12px',
-                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                      color: 'var(--chart-text)'
                     }}
+                    labelStyle={{ color: 'var(--chart-text)' }}
+                    itemStyle={{ color: 'var(--chart-text)' }}
                   />
                   <Legend 
                     wrapperStyle={{ fontSize: '12px' }}

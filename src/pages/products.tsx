@@ -27,6 +27,7 @@ const ProductForm: React.FC<{
     brand: product?.brand || '',
     unit: product?.unit || 'pieces',
     location: product?.location || '',
+    sku: product?.sku || '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -112,6 +113,20 @@ const ProductForm: React.FC<{
             />
           </div>
           <div className="form-group">
+            <label className="form-label">Maximum Stock Level</label>
+            <input
+              type="number"
+              className="modern-input"
+              value={formData.maxStockLevel}
+              onChange={(e) => setFormData({ ...formData, maxStockLevel: parseInt(e.target.value) || 0 })}
+              min="0"
+              placeholder="0"
+            />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
             <label className="form-label">Supplier</label>
             <input
               type="text"
@@ -120,6 +135,47 @@ const ProductForm: React.FC<{
               onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
               required
               placeholder="Enter supplier name"
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Brand</label>
+            <input
+              type="text"
+              className="modern-input"
+              value={formData.brand}
+              onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+              placeholder="Enter brand name"
+            />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">Unit of Measurement</label>
+            <select
+              className="modern-select"
+              value={formData.unit}
+              onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+            >
+              <option value="pieces">Pieces</option>
+              <option value="kg">Kilograms</option>
+              <option value="grams">Grams</option>
+              <option value="liters">Liters</option>
+              <option value="ml">Milliliters</option>
+              <option value="meters">Meters</option>
+              <option value="cm">Centimeters</option>
+              <option value="boxes">Boxes</option>
+              <option value="packets">Packets</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Storage Location</label>
+            <input
+              type="text"
+              className="modern-input"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              placeholder="e.g., Warehouse A, Shelf B2"
             />
           </div>
         </div>
@@ -136,15 +192,54 @@ const ProductForm: React.FC<{
           />
         </div>
 
-        <div className="form-group">
-          <label className="form-label">Barcode (Optional)</label>
-          <input
-            type="text"
-            className="modern-input"
-            value={formData.barcode}
-            onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-            placeholder="Enter barcode"
-          />
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">SKU (Stock Keeping Unit)</label>
+            <input
+              type="text"
+              className="modern-input"
+              value={formData.sku}
+              onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
+              placeholder="Enter SKU code"
+            />
+          </div>
+          <div className="form-group">
+            <label className="form-label">Barcode</label>
+            <input
+              type="text"
+              className="modern-input"
+              value={formData.barcode}
+              onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+              placeholder="Enter barcode"
+            />
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">GST Rate (%)</label>
+            <select
+              className="modern-select"
+              value={formData.gstRate}
+              onChange={(e) => setFormData({ ...formData, gstRate: parseFloat(e.target.value) || 0 })}
+            >
+              <option value={0}>0% (Exempt)</option>
+              <option value={5}>5%</option>
+              <option value={12}>12%</option>
+              <option value={18}>18%</option>
+              <option value={28}>28%</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label className="form-label">HSN Code</label>
+            <input
+              type="text"
+              className="modern-input"
+              value={formData.hsnCode}
+              onChange={(e) => setFormData({ ...formData, hsnCode: e.target.value })}
+              placeholder="Enter HSN/SAC code"
+            />
+          </div>
         </div>
 
         <div className="action-buttons" style={{ marginTop: '24px' }}>
@@ -408,11 +503,16 @@ const Products: React.FC = () => {
                   <tr>
                     <th>Product</th>
                     <th>Category</th>
+                    <th>Brand</th>
+                    <th>SKU</th>
                     <th>Price</th>
                     <th>Stock</th>
-                    <th>Min Level</th>
+                    <th>Unit</th>
+                    <th>Min/Max Level</th>
                     <th>Status</th>
                     <th>Supplier</th>
+                    <th>GST Rate</th>
+                    <th>Location</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -423,16 +523,33 @@ const Products: React.FC = () => {
                         <div>
                           <div style={{ fontWeight: '600', marginBottom: '4px' }}>{product.name}</div>
                           <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{product.description}</div>
+                          {product.barcode && (
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                              📊 {product.barcode}
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td>
                         <span className="badge badge-success">{product.category}</span>
                       </td>
+                      <td style={{ fontSize: '14px', fontWeight: '500' }}>
+                        {product.brand || '—'}
+                      </td>
+                      <td style={{ fontSize: '12px', fontFamily: 'monospace', fontWeight: '600' }}>
+                        {product.sku || '—'}
+                      </td>
                       <td style={{ fontWeight: '600', color: 'var(--chart-green)' }}>
                         {formatCurrency(product.price)}
                       </td>
                       <td style={{ fontWeight: '600' }}>{product.quantity}</td>
-                      <td>{product.minStockLevel}</td>
+                      <td style={{ fontSize: '12px' }}>{product.unit || 'pieces'}</td>
+                      <td>
+                        <div style={{ fontSize: '12px' }}>
+                          <div>Min: {product.minStockLevel || '—'}</div>
+                          <div>Max: {product.maxStockLevel || '—'}</div>
+                        </div>
+                      </td>
                       <td>
                         <span className={`badge ${
                           product.minStockLevel && product.quantity <= product.minStockLevel 
@@ -448,7 +565,18 @@ const Products: React.FC = () => {
                             : 'In Stock'}
                         </span>
                       </td>
-                      <td>{product.supplier}</td>
+                      <td>{product.supplier || '—'}</td>
+                      <td style={{ fontSize: '12px', textAlign: 'center' }}>
+                        {product.gstRate ? `${product.gstRate}%` : '—'}
+                        {product.hsnCode && (
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                            HSN: {product.hsnCode}
+                          </div>
+                        )}
+                      </td>
+                      <td style={{ fontSize: '12px' }}>
+                        {product.location || '—'}
+                      </td>
                       <td>
                         <div className="action-buttons">
                           <button

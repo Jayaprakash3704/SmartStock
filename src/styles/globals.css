@@ -89,13 +89,13 @@
 }
 
 [data-theme="dark"] {
-    /* Enhanced Dark Theme - PITCH BLACK as requested */
+    /* Enhanced Dark Theme - PITCH BLACK with excellent visibility */
     --bg: linear-gradient(135deg, #000000 0%, #0a0a0a 100%);
-    --surface: #111111;
-    --surface-2: #1a1a1a;
-    --surface-3: #262626;
+    --surface: #1a1a1a;
+    --surface-2: #242424;
+    --surface-3: #2e2e2e;
     --text: #ffffff;
-    --text-muted: #a1a1aa;
+    --text-muted: #cccccc;
     
     /* Primary Colors - Vibrant in Dark */
     --primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -122,10 +122,11 @@
     --info-solid: #60a5fa;
     
     /* UI Elements - Enhanced for pitch black */
-    --border: #333333;
-    --border-light: #404040;
+    --border: #404040;
+    --border-light: #555555;
     --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
     --shadow-lg: 0 35px 60px -12px rgba(0, 0, 0, 0.95);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
     
     /* Background Overlays */
     --overlay: rgba(0, 0, 0, 0.9);
@@ -134,9 +135,9 @@
     /* Chart specific colors for dark mode */
     --chart-bg: #1a1a1a;
     --chart-text: #ffffff;
-    --chart-grid: #333333;
-    --chart-tooltip-bg: #262626;
-    --chart-tooltip-border: #404040;
+    --chart-grid: #404040;
+    --chart-tooltip-bg: #2a2a2a;
+    --chart-tooltip-border: #555555;
     
     /* Vibrant chart colors for dark mode - enhanced brightness */
     --chart-blue: #60a5fa;
@@ -2088,7 +2089,7 @@ body::after {
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(241, 245, 249, 0.5);
+    background: var(--surface-2);
     border-radius: 4px;
 }
 
@@ -2103,10 +2104,19 @@ body::after {
     transform: scale(1.1);
 }
 
+/* Dark mode scrollbar enhancements */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: var(--surface-3);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
 /* Firefox scrollbar */
 * {
     scrollbar-width: thin;
-    scrollbar-color: #667eea rgba(241, 245, 249, 0.5);
+    scrollbar-color: #667eea var(--surface-2);
 }
 
 /* Enhanced responsive design */
@@ -2153,4 +2163,252 @@ body::after {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     font-weight: 600;
+}
+
+/* =================== DARK MODE ENHANCEMENTS =================== */
+
+/* Enhanced dark mode visibility fixes */
+[data-theme="dark"] {
+    /* Ensure all text elements are visible */
+    color: var(--text);
+}
+
+/* Dark mode card enhancements */
+[data-theme="dark"] .glass-card,
+[data-theme="dark"] .modern-table,
+[data-theme="dark"] .chart-container,
+[data-theme="dark"] .stat-card {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+/* Dark mode navigation fixes */
+[data-theme="dark"] .nav-item {
+    color: var(--text);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .nav-item:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+/* Dark mode input fixes */
+[data-theme="dark"] .modern-input,
+[data-theme="dark"] .modern-select,
+[data-theme="dark"] .search-input {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .modern-input::placeholder,
+[data-theme="dark"] .search-input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
+}
+
+/* Dark mode button enhancements */
+[data-theme="dark"] .btn-icon {
+    background: var(--surface-2);
+    border-color: var(--border);
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .btn-icon:hover {
+    background: var(--surface-3);
+    color: var(--text);
+}
+
+/* Dark mode table enhancements */
+[data-theme="dark"] .modern-table th {
+    color: white;
+}
+
+[data-theme="dark"] .modern-table td {
+    color: var(--text);
+    border-bottom-color: var(--border);
+}
+
+[data-theme="dark"] .modern-table tbody tr:hover {
+    background: var(--surface-2);
+}
+
+[data-theme="dark"] .modern-table tbody tr:nth-child(even) {
+    background: var(--surface-2);
+}
+
+/* Dark mode modal fixes */
+[data-theme="dark"] .modal-content {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+/* Dark mode alert fixes */
+[data-theme="dark"] .alert {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+/* Dark mode dropdown fixes */
+[data-theme="dark"] .dropdown-menu {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+[data-theme="dark"] .dropdown-item {
+    color: var(--text);
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+    background: var(--surface-2);
+    color: var(--text);
+}
+
+/* Dark mode progress bar fixes */
+[data-theme="dark"] .progress-bar {
+    background: var(--surface-2);
+}
+
+/* Dark mode status indicators */
+[data-theme="dark"] .status-dot.active {
+    background: var(--success-solid);
+}
+
+[data-theme="dark"] .status-dot.inactive {
+    background: var(--danger-solid);
+}
+
+/* Dark mode page header fixes */
+[data-theme="dark"] .page-header {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+/* Dark mode user card fixes */
+[data-theme="dark"] .user-card {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+/* Dark mode report tab fixes */
+[data-theme="dark"] .report-tab {
+    background: var(--surface);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+[data-theme="dark"] .report-tab:hover {
+    background: var(--surface-2);
+}
+
+[data-theme="dark"] .report-tab-description {
+    color: var(--text-muted);
+}
+
+/* Dark mode auth fixes */
+[data-theme="dark"] .auth-card {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+/* Ensure visibility for all text elements in dark mode */
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6,
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] div,
+[data-theme="dark"] label,
+[data-theme="dark"] td,
+[data-theme="dark"] th {
+    color: var(--text);
+}
+
+/* Ensure muted text is still visible */
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] .muted,
+[data-theme="dark"] .text-gray-600,
+[data-theme="dark"] .text-secondary {
+    color: var(--text-muted) !important;
+    opacity: 0.9;
+}
+
+/* Dark mode loading spinner */
+[data-theme="dark"] .loading-spinner {
+    border-color: var(--surface-3);
+    border-top-color: var(--primary-solid);
+}
+
+/* Dark mode skeleton loader */
+[data-theme="dark"] .loading-skeleton {
+    background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 50%, var(--surface-2) 75%);
+}
+
+/* Enhanced focus states for dark mode */
+[data-theme="dark"] .modern-input:focus,
+[data-theme="dark"] .modern-select:focus,
+[data-theme="dark"] .search-input:focus {
+    border-color: var(--primary-solid);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* Dark mode form enhancements */
+[data-theme="dark"] .form-label {
+    color: var(--text);
+}
+
+/* Ensure all chart tooltips are visible in dark mode */
+[data-theme="dark"] .recharts-default-tooltip {
+    background-color: var(--chart-tooltip-bg) !important;
+    border: 1px solid var(--chart-tooltip-border) !important;
+    color: var(--chart-text) !important;
+}
+
+[data-theme="dark"] .recharts-tooltip-label {
+    color: var(--chart-text) !important;
+}
+
+[data-theme="dark"] .recharts-tooltip-item {
+    color: var(--chart-text) !important;
+}
+
+/* Enhanced visibility for small text elements */
+[data-theme="dark"] .text-xs,
+[data-theme="dark"] .text-sm,
+[data-theme="dark"] small {
+    color: var(--text-muted);
+    opacity: 0.9;
+}
+
+/* Dark mode badge fixes */
+[data-theme="dark"] .badge {
+    color: white;
+    font-weight: 600;
+}
+
+/* Ensure proper contrast for all interactive elements */
+[data-theme="dark"] button,
+[data-theme="dark"] .btn {
+    color: inherit;
+}
+
+/* Dark mode link fixes */
+[data-theme="dark"] a,
+[data-theme="dark"] .btn-link {
+    color: var(--primary-solid);
+}
+
+[data-theme="dark"] a:hover,
+[data-theme="dark"] .btn-link:hover {
+    color: var(--primary-hover);
 }

@@ -110,7 +110,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
     <>
       {/* Desktop Modern Navigation Bar */}
       <motion.nav
-        className="hidden lg:block bg-gradient-to-r from-card via-card/95 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-lg"
+        className="hidden lg:block bg-gradient-to-r from-card via-card/95 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-lg text-foreground"
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
@@ -240,7 +240,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPage, onPageChang
 
       {/* Mobile Header */}
       <motion.header
-        className="lg:hidden bg-gradient-to-r from-card via-card/95 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-lg"
+        className="lg:hidden bg-gradient-to-r from-card via-card/95 to-card border-b border-border/50 sticky top-0 z-40 backdrop-blur-lg text-foreground"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.3 }}

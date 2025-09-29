@@ -87,10 +87,15 @@ module.exports = {
         'card-foreground': 'var(--text)',
         border: 'var(--border)',
         muted: 'var(--text-muted)',
-        accent: {
-          DEFAULT: 'var(--accent)'
+        'muted-foreground': 'var(--text-muted)',
+        destructive: {
+          DEFAULT: 'var(--danger-solid)',
+          foreground: '#ffffff'
         },
-        'accent-foreground': 'var(--text)'
+        accent: {
+          DEFAULT: 'var(--accent-solid)',
+          foreground: 'var(--text)'
+        }
       },
       fontFamily: {
         'sans': ['Inter', 'system-ui', 'sans-serif'],
